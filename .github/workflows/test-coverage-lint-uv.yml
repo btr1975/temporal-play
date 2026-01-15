@@ -4,12 +4,6 @@
 name: Unit-Testing, Coverage, Linting
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - feature/*
-      - bug/*
   pull_request:
     branches:
       - main
