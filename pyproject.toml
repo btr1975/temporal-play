@@ -43,8 +43,7 @@ classifiers = [
 
 
 dependencies = [
-    
-    
+    "temporalio>=1.21.1",
 ]
 
 [dependency-groups]
@@ -59,7 +58,6 @@ dev = [
     "sphinxcontrib-mermaid",
     "bandit",
     "mypy",
-    
 ]
 
 
