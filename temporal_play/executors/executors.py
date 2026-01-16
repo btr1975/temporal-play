@@ -56,7 +56,7 @@ query {
 
 
 async def run_say_hello_workflow(client: Client, task_queue: str) -> None:
-    """Run the say hello workflow via client.execute_workflow, using that method just executes the workflow
+    """Run a say-hello-workflow via client.execute_workflow, using that method just executes the workflow
        it does not hand back a handler to deal with signaling and such
 
     :param client: The temporal client object
@@ -76,8 +76,9 @@ async def run_say_hello_workflow(client: Client, task_queue: str) -> None:
     print(f"Workflow Result {result}")
 
 
-async def run_workflow_2(client: Client, task_queue: str) -> None:
-    """Run a workflow
+async def run_nautobot_gql_query_workflow(client: Client, task_queue: str) -> None:
+    """Run a workflow run-nautobot-gql-query-workflow via client.execute_workflow, using that method just
+       executes the workflow it does not hand back a handler to deal with signaling and such
 
     :param client: The temporal client object
     :type client: Client
@@ -97,8 +98,9 @@ async def run_workflow_2(client: Client, task_queue: str) -> None:
     print(f"Workflow Result {result}")
 
 
-async def run_workflow_3(client: Client, task_queue: str) -> None:
-    """Run a workflow
+async def run_nautobot_gql_query_workflow_with_approval(client: Client, task_queue: str) -> None:
+    """Run a run-nautobot-gql-query-workflow-with-approval via client.start_workflow, using that method
+       gives back a handler to deal with signaling and such
 
     :param client: The temporal client object
     :type client: Client
@@ -109,9 +111,9 @@ async def run_workflow_3(client: Client, task_queue: str) -> None:
     :returns: Nothing
     """
     handler = await client.start_workflow(
-        workflow="run-nautobot-gql-query-workflow",
+        workflow="run-nautobot-gql-query-workflow-with-approval",
         arg=InputDataNautobotGQLQuery(query=QUERY_2, variables=None),
-        id=f"run-nautobot-gql-query-workflow-{uuid.uuid4()}",
+        id=f"run-nautobot-gql-query-workflow-with-approval-{uuid.uuid4()}",
         task_queue=task_queue,
     )
 
@@ -133,7 +135,7 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type task_queue: str
     """
     client = await Client.connect(f"{host}:{port}")
-    await run_workflow_3(client=client, task_queue=task_queue)
+    await run_say_hello_workflow(client=client, task_queue=task_queue)
 
 
 if __name__ == "__main__":
