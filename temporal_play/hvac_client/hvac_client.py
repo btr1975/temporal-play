@@ -2,6 +2,7 @@
 hvac client
 """
 
+import asyncio
 import hvac
 
 
@@ -19,7 +20,7 @@ class HvacClient:  # pylint: disable=too-few-public-methods
     def __init__(self, host: str, port: int | str, token: str) -> None:
         self._client = hvac.Client(url=f"{host}:{port}", token=token)
 
-    def get_secret(self, path: str, key: str = None) -> str | dict | None:
+    async def get_secret(self, path: str, key: str = None) -> str | dict | None:
         """Method to get secret key from a path
 
         :param path: Path to secret
@@ -30,7 +31,7 @@ class HvacClient:  # pylint: disable=too-few-public-methods
         :rtype: str | dict
         :returns: The secret
         """
-        data = self._client.secrets.kv.v2.read_secret_version(path=path, mount_point="secret")
+        data = await asyncio.to_thread(self._client.secrets.kv.v2.read_secret_version, path=path, mount_point="secret")
 
         if key is None:
             return data["data"]["data"]

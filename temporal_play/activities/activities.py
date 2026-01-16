@@ -49,7 +49,7 @@ async def get_nautobot_gql_data(input_data: InputDataNautobotGQLQuery) -> dict:
         secrets_client = HvacClient(
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
-        secrets = secrets_client.get_secret("/nautobot")
+        secrets = await secrets_client.get_secret("/nautobot")
         obj = NautobotGqlClient(host=secrets["host"], port=8080, token=secrets["token"], ssl_verify=False)
         data = await obj.get_gql_data(query=input_data.query, variables=input_data.variables)
 

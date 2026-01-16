@@ -135,7 +135,7 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type task_queue: str
     """
     client = await Client.connect(f"{host}:{port}")
-    await run_say_hello_workflow(client=client, task_queue=task_queue)
+    await run_nautobot_gql_query_workflow_with_approval(client=client, task_queue=task_queue)
 
 
 if __name__ == "__main__":
