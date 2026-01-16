@@ -7,7 +7,7 @@ import uuid
 
 from temporalio.client import Client
 
-from temporal_play.workflows.workflows import InputData, NautobotGQLQueryInput
+from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputDataApprover
 
 
 QUERY = """
@@ -32,9 +32,32 @@ query ($device_name: [String]!) {
 }
 """
 
+QUERY_2 = """
+query {
+  devices {
+    hostname: name
+    config_context
+    interfaces {
+      name
+      untagged_vlan {
+        id
+        vid
+        name
+      }
+      tagged_vlans {
+        id
+        vid
+        name
+      }
+    }
+  }
+}
+"""
 
-async def run_workflow(client: Client, task_queue: str) -> None:
-    """Run a workflow
+
+async def run_say_hello_workflow(client: Client, task_queue: str) -> None:
+    """Run the say hello workflow via client.execute_workflow, using that method just executes the workflow
+       it does not hand back a handler to deal with signaling and such
 
     :param client: The temporal client object
     :type client: Client
@@ -66,15 +89,51 @@ async def run_workflow_2(client: Client, task_queue: str) -> None:
     """
     result = await client.execute_workflow(
         workflow="run-nautobot-gql-query-workflow",
-        arg=NautobotGQLQueryInput(query=QUERY, variables={"device_name": "3560G_A"}),
+        arg=InputDataNautobotGQLQuery(query=QUERY_2, variables=None),
         id=f"run-nautobot-gql-query-workflow-{uuid.uuid4()}",
         task_queue=task_queue,
     )
+
     print(f"Workflow Result {result}")
 
-async def main(host: str, port: int, task_queue: str):
+
+async def run_workflow_3(client: Client, task_queue: str) -> None:
+    """Run a workflow
+
+    :param client: The temporal client object
+    :type client: Client
+    :param task_queue: The task queue name
+    :type task_queue: str
+
+    :rtype: None
+    :returns: Nothing
+    """
+    handler = await client.start_workflow(
+        workflow="run-nautobot-gql-query-workflow",
+        arg=InputDataNautobotGQLQuery(query=QUERY_2, variables=None),
+        id=f"run-nautobot-gql-query-workflow-{uuid.uuid4()}",
+        task_queue=task_queue,
+    )
+
+    await handler.signal(signal="approval", arg=InputDataApprover(name="Ben", approve=True))
+
+    result = await handler.result()
+
+    print(f"Workflow Result {result}")
+
+
+async def main(host: str, port: int, task_queue: str) -> None:
+    """Main function
+
+    :param host: The temporal host
+    :type host: str
+    :param port: The temporal port
+    :type port: int
+    :param task_queue: The name of the task queue
+    :type task_queue: str
+    """
     client = await Client.connect(f"{host}:{port}")
-    await run_workflow_2(client=client, task_queue=task_queue)
+    await run_workflow_3(client=client, task_queue=task_queue)
 
 
 if __name__ == "__main__":

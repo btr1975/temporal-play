@@ -5,7 +5,7 @@ nautobot_gql_client
 import niquests
 
 
-class NautobotGqlClient:
+class NautobotGqlClient:  # pylint: disable=too-few-public-methods
     """A Natuobot client for gql
 
     :param host: Nautobot server host
@@ -31,6 +31,16 @@ class NautobotGqlClient:
         self._session.verify = ssl_verify
 
     async def get_gql_data(self, query: str, variables: dict = None) -> dict:
+        """Get data from Nautobot via GraphQL Query
+
+        :param query: GraphQL query
+        :type query: str
+        :param variables: GraphQL variables
+        :type variables: dict
+
+        :rtype: dict
+        :return: nautobot gql data
+        """
         json_data = {
             "query": query,
         }

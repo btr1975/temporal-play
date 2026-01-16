@@ -4,30 +4,36 @@ Workflows
 
 from typing import Sequence
 from datetime import timedelta
-from dataclasses import dataclass
+import logging
 
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
-from temporal_play.activities.activities import say_hello_activity, get_nautobot_gql_data
+from temporal_play.schemas.schemas import InputData, InputDataApprover, InputDataNautobotGQLQuery
+
+from temporal_play.activities.activities import (
+    say_hello_activity,
+    get_nautobot_gql_data,
+)
 
 
-@dataclass
-class InputData:
-    name: str
-    other: str
-
-
-@dataclass
-class NautobotGQLQueryInput:
-    query: str
-    variables: dict | None
+logging.basicConfig(level=logging.INFO)
 
 
 @workflow.defn(name="say-hello-workflow")
-class SayHelloWorkFlow:
+class SayHelloWorkFlow:  # pylint: disable=too-few-public-methods
+    """This is a Hello World workflow"""
 
     @workflow.run
     async def run(self, input_data: InputData) -> str:
+        """Method to run the workflow
+
+        :param input_data: Input data
+        :type input_data: InputData
+
+        :rtype: str
+        :return: Hello World
+        """
 
         return await workflow.execute_activity(
             activity=say_hello_activity,
@@ -39,14 +45,50 @@ class SayHelloWorkFlow:
 @workflow.defn(name="run-nautobot-gql-query-workflow")
 class RunNautobotGqlQueryWorkflow:
 
+    def __init__(self) -> None:
+        self.approved = None
+        self.approver_name = None
+
     @workflow.run
-    async def run(self, input_data: NautobotGQLQueryInput) -> str:
+    async def run(self, input_data: InputDataNautobotGQLQuery) -> str:
+        await workflow.execute_activity(
+            activity=say_hello_activity,
+            arg=InputData(name="Ben", other="Poo"),
+            schedule_to_close_timeout=timedelta(minutes=10),
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+            ),
+        )
+
+        while True:
+            await workflow.wait_condition(lambda: self.approved is not None)
+
+            if self.approved:
+                break
+
+            else:
+                return f"{self.approver_name} put in false"
 
         return await workflow.execute_activity(
             activity=get_nautobot_gql_data,
-            arg={"query": input_data.query, "variables": input_data.variables},
+            arg=input_data,
             schedule_to_close_timeout=timedelta(minutes=10),
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+            ),
         )
+
+    @workflow.signal(name="approval")
+    def approval(self, input_data: InputDataApprover) -> None:
+        # 👉 A Signal handler mutates the Workflow state but cannot return a value.
+        self.approved = input_data.approve
+        self.approver_name = input_data.name
 
 
 ALL_WORKFLOWS: Sequence[type] = [SayHelloWorkFlow, RunNautobotGqlQueryWorkflow]
