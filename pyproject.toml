@@ -43,6 +43,7 @@ classifiers = [
 
 
 dependencies = [
+    "niquests>=3.16.1",
     "temporalio>=1.21.1",
 ]
 

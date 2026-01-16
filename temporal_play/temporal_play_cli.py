@@ -3,6 +3,8 @@ CLI for temporal_play
 """
 
 from argparse import ArgumentParser
+import asyncio
+from temporal_play.workers.worker_1 import main as worker_1
 
 
 def cli_argument_parser() -> ArgumentParser:
@@ -20,15 +22,12 @@ def cli_argument_parser() -> ArgumentParser:
     )
     subparsers.required = True
 
-    # This is the sub parser to print hello
-    arg_parser_hello = subparsers.add_parser("hello", help="Say Hello")
-    arg_parser_hello.set_defaults(which_sub="hello")
-    arg_parser_hello.add_argument("-n", "--name", required=True, help="Your name")
-
-    # This is the sub parser to print goodbye
-    arg_parser_goodbye = subparsers.add_parser("goodbye", help="Say Goodbye")
-    arg_parser_goodbye.set_defaults(which_sub="goodbye")
-    arg_parser_goodbye.add_argument("-n", "--name", required=True, help="Your name")
+    # This is the sub parser to start worker
+    arg_parser_hello = subparsers.add_parser("worker", help="Start Worker")
+    arg_parser_hello.set_defaults(which_sub="worker")
+    arg_parser_hello.add_argument("-a", "--address", required=True, help="The Temporal IP address")
+    arg_parser_hello.add_argument("-p", "--port", required=True, help="The Temporal Port Number")
+    arg_parser_hello.add_argument("-t", "--task-queue", required=True, help="The Temporal Task Queue Name")
 
     return arg_parser
 
@@ -44,7 +43,8 @@ def cli() -> None:
         arg_parser = cli_argument_parser()
         args = arg_parser.parse_args()
 
-        print(args)
+        if args.which_sub == "worker":
+            asyncio.run(worker_1(host=args.address, port=args.port, task_queue=args.task_queue))
 
     except AttributeError as error:
         print(f"\n !!! {error} !!! \n")
