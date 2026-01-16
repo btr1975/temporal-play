@@ -2,6 +2,7 @@
 activities
 """
 
+import os
 import temporalio.workflow
 from temporalio.exceptions import ApplicationError
 from temporalio import activity
@@ -9,6 +10,7 @@ from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery
 
 with temporalio.workflow.unsafe.imports_passed_through():
     from temporal_play.nautobot_gql_client.nautobot_gql_client import NautobotGqlClient
+    from temporal_play.hvac_client.hvac_client import HvacClient
 
 
 @activity.defn(name="say-hello-activity")
@@ -44,9 +46,11 @@ async def get_nautobot_gql_data(input_data: InputDataNautobotGQLQuery) -> dict:
     :return: nautobot gql data
     """
     try:
-        obj = NautobotGqlClient(
-            host="http://10.0.0.113", port=8080, token="0123456789abcdef0123456789abcdef01234567", ssl_verify=False
+        secrets_client = HvacClient(
+            host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
+        secrets = secrets_client.get_secret("/nautobot")
+        obj = NautobotGqlClient(host=secrets["host"], port=8080, token=secrets["token"], ssl_verify=False)
         data = await obj.get_gql_data(query=input_data.query, variables=input_data.variables)
 
     except Exception as e:

@@ -4,7 +4,11 @@ CLI for temporal_play
 
 from argparse import ArgumentParser
 import asyncio
+from dotenv import load_dotenv
 from temporal_play.workers.worker_1 import main as worker_1
+
+
+load_dotenv()
 
 
 def cli_argument_parser() -> ArgumentParser:

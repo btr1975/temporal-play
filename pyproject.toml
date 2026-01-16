@@ -43,7 +43,9 @@ classifiers = [
 
 
 dependencies = [
+    "hvac>=2.4.0",
     "niquests>=3.16.1",
+    "python-dotenv>=1.2.1",
     "temporalio>=1.21.1",
 ]
 
