@@ -27,9 +27,15 @@ class InputShowCommand:
 
     command: str
     nautobot_query: InputDataNautobotGQLQuery
-    host: str | None = None
-    device_type: str | None = None
-    nbot_query_result: dict | None = None
+
+
+@dataclass
+class InputNetmikoCommand:
+    """Input to run a Netmiko command"""
+
+    command: str
+    host: str
+    device_type: str
 
 
 @dataclass

@@ -6,7 +6,7 @@ import os
 import temporalio.workflow
 from temporalio.exceptions import ApplicationError
 from temporalio import activity
-from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputShowCommand
+from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputNetmikoCommand
 
 with temporalio.workflow.unsafe.imports_passed_through():
     from temporal_play.nautobot_gql_client.nautobot_gql_client import NautobotGqlClient
@@ -64,11 +64,11 @@ async def get_nautobot_gql_data(input_data: InputDataNautobotGQLQuery) -> dict:
 
 
 @activity.defn(name="run-show-command-activity")
-async def run_show_command_activity(input_data: InputShowCommand) -> str:
+async def run_show_command_activity(input_data: InputNetmikoCommand) -> str:
     """This activity runs a show command using Netmiko
 
     :param input_data: input data
-    :type input_data: InputShowCommand
+    :type input_data: InputNetmikoCommand
 
     :rtype: str
     :return: The result of show command
@@ -78,14 +78,49 @@ async def run_show_command_activity(input_data: InputShowCommand) -> str:
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
         device_secrets = await secrets_client.get_secret("/devices")
-        device_type = input_data.nbot_query_result["data"]["devices"][0]["platform"]["network_driver_mappings"][
-            "netmiko"
-        ]
-        host = input_data.nbot_query_result["data"]["devices"][0]["primary_ip4"]["address"].split("/")[0]
+
         device = NetmikoClient(
-            host=host, username=device_secrets["username"], password=device_secrets["password"], device_type=device_type
+            host=input_data.host,
+            username=device_secrets["username"],
+            password=device_secrets["password"],
+            device_type=input_data.device_type,
         )
+
         data = await device.send_command(input_data.command)
+
+    except Exception as e:
+        raise ApplicationError(
+            message="",
+            non_retryable=False,
+        ) from e
+
+    return data
+
+
+@activity.defn(name="run-show-command-parse-with-ntc-template-activity")
+async def run_show_command_parse_with_ntc_templates_activity(input_data: InputNetmikoCommand) -> list[dict]:
+    """This activity runs a show command using Netmiko and parses with ntc-templates
+
+    :param input_data: input data
+    :type input_data: InputNetmikoCommand
+
+    :rtype: list[dict]
+    :return: The result of show command
+    """
+    try:
+        secrets_client = HvacClient(
+            host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
+        )
+        device_secrets = await secrets_client.get_secret("/devices")
+
+        device = NetmikoClient(
+            host=input_data.host,
+            username=device_secrets["username"],
+            password=device_secrets["password"],
+            device_type=input_data.device_type,
+        )
+
+        data = await device.send_command_parse_ntc_templates(input_data.command)
 
     except Exception as e:
         raise ApplicationError(
@@ -100,4 +135,5 @@ ALL_ACTIVITIES = [
     say_hello_activity,
     get_nautobot_gql_data,
     run_show_command_activity,
+    run_show_command_parse_with_ntc_templates_activity,
 ]
