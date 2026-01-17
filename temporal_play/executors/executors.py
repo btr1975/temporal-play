@@ -7,7 +7,7 @@ import uuid
 
 from temporalio.client import Client
 
-from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputDataApprover
+from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputDataApprover, InputShowCommand
 
 
 QUERY = """
@@ -49,6 +49,20 @@ query {
         vid
         name
       }
+    }
+  }
+}
+"""
+
+QUERY_3 = """
+query ($device_name: [String]!) {
+  devices(name: $device_name) {
+    hostname: name
+    primary_ip4 {
+			address
+    }
+    platform {
+      network_driver_mappings
     }
   }
 }
@@ -98,6 +112,31 @@ async def run_nautobot_gql_query_workflow(client: Client, task_queue: str) -> No
     print(f"Workflow Result {result}")
 
 
+async def run_show_command_workflow(client: Client, task_queue: str) -> None:
+    """Run a workflow run-nautobot-gql-query-workflow via client.execute_workflow, using that method just
+       executes the workflow it does not hand back a handler to deal with signaling and such
+
+    :param client: The temporal client object
+    :type client: Client
+    :param task_queue: The task queue name
+    :type task_queue: str
+
+    :rtype: None
+    :returns: Nothing
+    """
+    result = await client.execute_workflow(
+        workflow="run-show-command-workflow",
+        arg=InputShowCommand(
+            command="show interface",
+            nautobot_query=InputDataNautobotGQLQuery(query=QUERY_3, variables={"device_name": "3560G_A"}),
+        ),
+        id=f"run-show-command-workflow-{uuid.uuid4()}",
+        task_queue=task_queue,
+    )
+
+    print(f"Workflow Result {result}")
+
+
 async def run_nautobot_gql_query_workflow_with_approval(client: Client, task_queue: str) -> None:
     """Run a run-nautobot-gql-query-workflow-with-approval via client.start_workflow, using that method
        gives back a handler to deal with signaling and such
@@ -135,7 +174,7 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type task_queue: str
     """
     client = await Client.connect(f"{host}:{port}")
-    await run_nautobot_gql_query_workflow_with_approval(client=client, task_queue=task_queue)
+    await run_show_command_workflow(client=client, task_queue=task_queue)
 
 
 if __name__ == "__main__":

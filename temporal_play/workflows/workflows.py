@@ -9,12 +9,9 @@ import logging
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
-from temporal_play.schemas.schemas import InputData, InputDataApprover, InputDataNautobotGQLQuery
+from temporal_play.schemas.schemas import InputData, InputDataApprover, InputDataNautobotGQLQuery, InputShowCommand
 
-from temporal_play.activities.activities import (
-    say_hello_activity,
-    get_nautobot_gql_data,
-)
+from temporal_play.activities.activities import say_hello_activity, get_nautobot_gql_data, run_show_command_activity
 
 
 logging.basicConfig(level=logging.INFO)
@@ -51,7 +48,7 @@ class RunNautobotGqlQueryWorkflowWithApproval:
         self.approver_name = None
 
     @workflow.run
-    async def run(self, input_data: InputDataNautobotGQLQuery) -> dict:
+    async def run(self, input_data: InputDataNautobotGQLQuery) -> dict | str:
         """Method to run the workflow
 
         :param input_data: Input data
@@ -137,4 +134,53 @@ class RunNautobotGqlQueryWorkflow:  # pylint: disable=too-few-public-methods
         )
 
 
-ALL_WORKFLOWS: Sequence[type] = [SayHelloWorkFlow, RunNautobotGqlQueryWorkflow, RunNautobotGqlQueryWorkflowWithApproval]
+@workflow.defn(name="run-show-command-workflow")
+class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
+    """This is a workflow to run a show command"""
+
+    @workflow.run
+    async def run(self, input_data: InputShowCommand) -> str:
+        """Method to run the workflow
+
+        :param input_data: Input data
+        :type input_data: InputShowCommand
+
+        :rtype: str
+        :return: The show command
+        """
+
+        nbot_data = await workflow.execute_activity(
+            activity=get_nautobot_gql_data,
+            arg=InputDataNautobotGQLQuery(
+                query=input_data.nautobot_query.query, variables=input_data.nautobot_query.variables
+            ),
+            schedule_to_close_timeout=timedelta(minutes=10),
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+            ),
+        )
+
+        input_data.nbot_query_result = nbot_data
+
+        return await workflow.execute_activity(
+            activity=run_show_command_activity,
+            arg=input_data,
+            schedule_to_close_timeout=timedelta(minutes=10),
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+            ),
+        )
+
+
+ALL_WORKFLOWS: Sequence[type] = [
+    SayHelloWorkFlow,
+    RunNautobotGqlQueryWorkflow,
+    RunNautobotGqlQueryWorkflowWithApproval,
+    RunShowCommandWorkflow,
+]

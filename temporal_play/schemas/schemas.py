@@ -22,6 +22,17 @@ class InputDataNautobotGQLQuery:
 
 
 @dataclass
+class InputShowCommand:
+    """Input to run a show command"""
+
+    command: str
+    nautobot_query: InputDataNautobotGQLQuery
+    host: str | None = None
+    device_type: str | None = None
+    nbot_query_result: dict | None = None
+
+
+@dataclass
 class InputDataApprover:
     """Input for an approver"""
 
