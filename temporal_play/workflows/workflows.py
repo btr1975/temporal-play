@@ -16,6 +16,7 @@ from temporal_play.schemas.schemas import (
     InputShowCommand,
     InputNetmikoCommand,
     InputRenderJinja2,
+    InputRenderConfiguration,
 )
 
 from temporal_play.activities.activities import (
@@ -191,9 +192,9 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
             ),
         )
 
-        await workflow.execute_activity(
-            activity=run_render_jinja2_activity,
-            arg=InputRenderJinja2(template="TEMPLATE: {{ blah }}", variable_data={"blah": "FUCK OFF!"}),
+        return await workflow.execute_activity(
+            activity=run_show_command_activity,
+            arg=InputNetmikoCommand(command=input_data.command, host=host, device_type=device_type),
             schedule_to_close_timeout=timedelta(minutes=10),
             retry_policy=RetryPolicy(
                 backoff_coefficient=2.0,
@@ -203,9 +204,41 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
             ),
         )
 
+
+@workflow.defn(name="run-render-configuration-workflow")
+class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
+    """This is a workflow to run a configuration rendering"""
+
+    @workflow.run
+    async def run(self, input_data: InputRenderConfiguration) -> str:
+        """Method to run the workflow
+
+        :param input_data: Input data
+        :type input_data: InputRenderConfiguration
+
+        :rtype: str
+        :return: The rendered configuration
+        """
+
+        nbot_data = await workflow.execute_activity(
+            activity=get_nautobot_gql_data,
+            arg=InputDataNautobotGQLQuery(
+                query=input_data.nautobot_query.query, variables=input_data.nautobot_query.variables
+            ),
+            schedule_to_close_timeout=timedelta(minutes=10),
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+            ),
+        )
+
+        device = nbot_data["data"]["devices"][0]
+
         return await workflow.execute_activity(
-            activity=run_show_command_activity,
-            arg=InputNetmikoCommand(command=input_data.command, host=host, device_type=device_type),
+            activity=run_render_jinja2_activity,
+            arg=InputRenderJinja2(template=input_data.jinja_2.template, variable_data=device),
             schedule_to_close_timeout=timedelta(minutes=10),
             retry_policy=RetryPolicy(
                 backoff_coefficient=2.0,
@@ -221,4 +254,5 @@ ALL_WORKFLOWS: Sequence[type] = [
     RunNautobotGqlQueryWorkflow,
     RunNautobotGqlQueryWorkflowWithApproval,
     RunShowCommandWorkflow,
+    RunRenderConfigurationWorkflow,
 ]

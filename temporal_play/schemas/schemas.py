@@ -47,6 +47,14 @@ class InputRenderJinja2:
 
 
 @dataclass
+class InputRenderConfiguration:
+    """Input to render a configuration file"""
+
+    jinja_2: InputRenderJinja2
+    nautobot_query: InputDataNautobotGQLQuery
+
+
+@dataclass
 class InputDataApprover:
     """Input for an approver"""
 
