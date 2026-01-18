@@ -39,6 +39,14 @@ class InputNetmikoCommand:
 
 
 @dataclass
+class InputRenderJinja2:
+    """Input to render a Jinja2 template"""
+
+    template: str
+    variable_data: dict
+
+
+@dataclass
 class InputDataApprover:
     """Input for an approver"""
 

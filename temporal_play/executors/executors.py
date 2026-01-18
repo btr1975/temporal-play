@@ -139,7 +139,8 @@ async def run_show_command_workflow(client: Client, task_queue: str) -> None:
 
 async def run_nautobot_gql_query_workflow_with_approval(client: Client, task_queue: str) -> None:
     """Run a run-nautobot-gql-query-workflow-with-approval via client.start_workflow, using that method
-       gives back a handler to deal with signaling and such
+       gives back a handler to deal with signaling and such, also this is how you start a workflow without
+       waiting fo it complete
 
     :param client: The temporal client object
     :type client: Client

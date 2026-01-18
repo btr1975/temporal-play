@@ -6,12 +6,13 @@ import os
 import temporalio.workflow
 from temporalio.exceptions import ApplicationError
 from temporalio import activity
-from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputNetmikoCommand
+from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputNetmikoCommand, InputRenderJinja2
 
 with temporalio.workflow.unsafe.imports_passed_through():
     from temporal_play.nautobot_gql_client.nautobot_gql_client import NautobotGqlClient
     from temporal_play.hvac_client.hvac_client import HvacClient
     from temporal_play.netmiko_client.netmiko_client import NetmikoClient
+    from temporal_play.rendering.rendering import render_jinja2_template
 
 
 @activity.defn(name="say-hello-activity")
@@ -131,9 +132,32 @@ async def run_show_command_parse_with_ntc_templates_activity(input_data: InputNe
     return data
 
 
+@activity.defn(name="run-render-jinja2-activity")
+async def run_render_jinja2_activity(input_data: InputRenderJinja2) -> str:
+    """This activity renders from Jinja2
+
+    :param input_data: input data
+    :type input_data: InputRenderJinja2
+
+    :rtype: str
+    :return: The rendered template
+    """
+    try:
+        data = await render_jinja2_template(template=input_data.template, variable_data=input_data.variable_data)
+
+    except Exception as e:
+        raise ApplicationError(
+            message="",
+            non_retryable=False,
+        ) from e
+
+    return data
+
+
 ALL_ACTIVITIES = [
     say_hello_activity,
     get_nautobot_gql_data,
     run_show_command_activity,
     run_show_command_parse_with_ntc_templates_activity,
+    run_render_jinja2_activity,
 ]
