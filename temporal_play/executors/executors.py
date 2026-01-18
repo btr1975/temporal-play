@@ -174,7 +174,7 @@ async def run_render_configuration_workflow(client: Client, task_queue: str) -> 
             jinja_2=InputRenderJinja2(template=JINJA_2_TEMPLATE, variable_data={}),
             nautobot_query=InputDataNautobotGQLQuery(query=QUERY, variables={"device_name": "3560G_A"}),
         ),
-        id=f"run-show-command-workflow-{uuid.uuid4()}",
+        id=f"run-render-configuration-workflow-{uuid.uuid4()}",
         task_queue=task_queue,
     )
 
@@ -222,5 +222,24 @@ async def main(host: str, port: int, task_queue: str) -> None:
     await run_render_configuration_workflow(client=client, task_queue=task_queue)
 
 
+async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
+    """Main function
+
+    :param host: The temporal host
+    :type host: str
+    :param port: The temporal port
+    :type port: int
+    :param task_queue: The name of the task queue
+    :type task_queue: str
+    """
+    client = await Client.connect(f"{host}:{port}")
+
+    tasks = []
+    for a in range(10):
+        tasks.append(run_render_configuration_workflow(client=client, task_queue=task_queue))
+
+    await asyncio.gather(*tasks)
+
+
 if __name__ == "__main__":
-    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue"))
+    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue"))
