@@ -49,6 +49,22 @@ def get_playbook_path(path: str, playbook_name: str) -> Path:
     return playbook_path
 
 
+def get_private_data_dir(private_data_dir: str) -> Path:
+    """Get the absolute full path to the private_data_dir create if it does not already exist
+
+    :type private_data_dir: String
+    :param private_data_dir: The path to the private data directory
+
+    :rtype: Path
+    :returns: The path to the private data directory
+    """
+    pd_path = Path(private_data_dir).absolute()
+
+    pd_path.mkdir(parents=True, exist_ok=True)
+
+    return pd_path
+
+
 def run_playbook(path: str, playbook_name: str, inventory: dict = None) -> Runner:
     """Function to run a playbook
 
@@ -66,8 +82,10 @@ def run_playbook(path: str, playbook_name: str, inventory: dict = None) -> Runne
     """
     project_path = get_project_path(path=path)
     playbook_path = get_playbook_path(path=path, playbook_name=playbook_name)
+    private_data_dir = get_private_data_dir(private_data_dir="/tmp/ansible_runner")
 
     return ansible_runner.run_async(
+        private_data_dir=str(private_data_dir),
         playbook=str(playbook_path),
         project_dir=str(project_path),
         inventory=inventory,
