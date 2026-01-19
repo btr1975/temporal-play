@@ -43,6 +43,8 @@ classifiers = [
 
 
 dependencies = [
+    "ansible>=12.3.0",
+    "ansible-runner>=2.4.2",
     "hvac>=2.4.0",
     "jinja2>=3.1.6",
     "netmiko>=4.6.0",
