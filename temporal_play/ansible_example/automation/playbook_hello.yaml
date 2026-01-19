@@ -1,0 +1,16 @@
+- name: "Playbook Hello World"
+  hosts: "localhost"
+  gather_facts: "no"
+
+  tasks:
+    - name: "10: Set Fact 'Hello World!'"
+      ansible.builtin.set_fact:
+        hello_world: "Hello World!"
+
+    - name: "20: Render Hello World from template"
+      ansible.builtin.set_fact:
+        rendered_hello_world: "{{ lookup('template', 'templates/hello_world.j2') }}"
+
+    - name: "30: Show a Debug"
+      ansible.builtin.debug:
+        var: "rendered_hello_world"

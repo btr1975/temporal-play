@@ -1,10 +1,12 @@
 """
 running ansible automations using ansible-runner
+
+See Source: https://docs.ansible.com/projects/runner/en/stable/_modules/ansible_runner/interface/#run
 """
 
 from pathlib import Path
 import ansible_runner
-from ansible_runner.interface import Transmitter, Worker, Processor, Runner
+from ansible_runner.interface import Runner
 
 
 def get_project_path(path: str) -> Path:
@@ -24,25 +26,6 @@ def get_project_path(path: str) -> Path:
         raise FileNotFoundError(f"directory '{project_path}' is not a found")
 
     return project_path
-
-
-def get_private_data_path(private_data_path: str) -> Path:
-    """Get absolute path to the private data directory
-
-    :type private_data_path: String
-    :param private_data_path: The path to the Ansible project
-
-    :rtype: Path
-    :returns: The path to the folder
-
-    :raises: FileNotFoundError: If the private data path does not exist
-    """
-    path = Path(private_data_path).absolute()
-
-    if not path.is_dir():
-        raise FileNotFoundError(f"directory '{path}' is not a found")
-
-    return path
 
 
 def get_playbook_path(path: str, playbook_name: str) -> Path:
@@ -66,25 +49,26 @@ def get_playbook_path(path: str, playbook_name: str) -> Path:
     return playbook_path
 
 
-def run_playbook(playbook_name: str, path: str, private_data_path: str) -> Transmitter | Worker | Processor | Runner:
+def run_playbook(path: str, playbook_name: str, inventory: dict = None) -> Runner:
     """Function to run a playbook
 
-    :type playbook_name: String
-    :param playbook_name: The playbook name
     :type path: String
     :param path: The path to the Ansible project
-    :type private_data_path: String
-    :param private_data_path: The path to the private data directory
+    :type playbook_name: String
+    :param playbook_name: The playbook name
+    :type inventory: dict
+    :param inventory: Ansible Inventory defaults to None
 
-    :rtype: Transmitter | Worker | Processor | Runner
+    :rtype: Runner
     :returns: Nothing it runs the playbook
+
+    :raises: FileNotFoundError: If the required paths are not found
     """
     project_path = get_project_path(path=path)
     playbook_path = get_playbook_path(path=path, playbook_name=playbook_name)
-    pd_path = get_private_data_path(private_data_path=private_data_path)
 
-    return ansible_runner.run(
-        private_data_dir=pd_path,
-        playbook=playbook_path,
-        project_dir=project_path,
+    return ansible_runner.run_async(
+        playbook=str(playbook_path),
+        project_dir=str(project_path),
+        inventory=inventory,
     )
