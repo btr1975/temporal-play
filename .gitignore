@@ -136,3 +136,5 @@ dmypy.json
 
 # No temp_*.py files
 temp_*.py
+temp_*.yaml
+temp_*.yml

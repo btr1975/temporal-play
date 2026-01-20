@@ -65,6 +65,7 @@ dev = [
     "sphinxcontrib-mermaid",
     "bandit",
     "mypy",
+    "pyyaml>=6.0.3",
 ]
 
 

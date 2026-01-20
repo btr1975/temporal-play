@@ -66,7 +66,7 @@ query ($device_name: [String]!) {
   devices(name: $device_name) {
     hostname: name
     primary_ip4 {
-			address
+			host
     }
     platform {
       network_driver_mappings
@@ -219,7 +219,7 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type task_queue: str
     """
     client = await Client.connect(f"{host}:{port}")
-    await run_render_configuration_workflow(client=client, task_queue=task_queue)
+    await run_show_command_workflow(client=client, task_queue=task_queue)
 
 
 async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
@@ -242,4 +242,4 @@ async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue"))
+    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue"))

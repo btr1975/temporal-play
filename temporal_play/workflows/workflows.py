@@ -178,7 +178,7 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
         )
 
         device_type = nbot_data["data"]["devices"][0]["platform"]["network_driver_mappings"]["netmiko"]
-        host = nbot_data["data"]["devices"][0]["primary_ip4"]["address"].split("/")[0]
+        host = nbot_data["data"]["devices"][0]["primary_ip4"]["host"]
 
         await workflow.execute_activity(
             activity=run_show_command_parse_with_ntc_templates_activity,
