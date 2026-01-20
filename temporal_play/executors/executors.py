@@ -235,7 +235,7 @@ async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
     client = await Client.connect(f"{host}:{port}")
 
     tasks = []
-    for a in range(10):
+    for _ in range(10):
         tasks.append(run_render_configuration_workflow(client=client, task_queue=task_queue))
 
     await asyncio.gather(*tasks)

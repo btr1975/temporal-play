@@ -1644,6 +1644,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "netmiko" },
     { name = "niquests" },
+    { name = "paramiko" },
     { name = "python-dotenv" },
     { name = "temporalio" },
 ]
@@ -1671,6 +1672,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "netmiko", specifier = ">=4.6.0" },
     { name = "niquests", specifier = ">=3.16.1" },
+    { name = "paramiko", specifier = ">=4.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "temporalio", specifier = ">=1.21.1" },
 ]

@@ -49,6 +49,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "netmiko>=4.6.0",
     "niquests>=3.16.1",
+    "paramiko>=4.0.0",
     "python-dotenv>=1.2.1",
     "temporalio>=1.21.1",
 ]

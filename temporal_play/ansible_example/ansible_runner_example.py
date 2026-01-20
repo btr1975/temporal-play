@@ -90,3 +90,46 @@ def run_playbook(path: str, playbook_name: str, inventory: dict = None) -> Runne
         project_dir=str(project_path),
         inventory=inventory,
     )
+
+
+def create_ansible_inventory_from_nautobot_gql(nautobot_query_result: dict) -> dict:
+    """A simple example of creating an Ansible inventory from nautobot_gql response
+
+    :type nautobot_query_result: dict
+    :param nautobot_query_result: The nautobot_gql response
+
+    :rtype: dict
+    :returns: Ansible inventory from nautobot_gql response
+
+    :raises: ValueError: If something fails
+    """
+    inventory_starter = {
+        "all": {
+            "vars": {
+                "ansible_connection": "ansible.netcommon.network_cli",
+                "ansible_become": True,
+                "ansible_become_method": "enable",
+            },
+            "hosts": {},
+        }
+    }
+
+    for device in nautobot_query_result["data"]["devices"]:
+        device_data = device.copy()
+        device_hostname = device["hostname"]
+
+        try:
+            created = {
+                device_hostname: {
+                    "ansible_network_os": device["platform"]["network_driver_mappings"]["ansible"],
+                    "ansible_host": device["primary_ip4"]["host"],
+                }
+            }
+            created[device_hostname].update(device_data)
+
+        except Exception as e:
+            raise ValueError(f"failed to create ansible inventory for device {device_hostname}") from e
+
+        inventory_starter["all"]["hosts"].update(created)
+
+    return inventory_starter
