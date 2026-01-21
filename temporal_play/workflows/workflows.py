@@ -2,6 +2,7 @@
 Workflows
 """
 
+import asyncio
 from typing import Sequence
 from datetime import timedelta
 import logging
@@ -153,13 +154,13 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
     """This is a workflow to run a show command"""
 
     @workflow.run
-    async def run(self, input_data: InputShowCommand) -> str:
+    async def run(self, input_data: InputShowCommand) -> dict:
         """Method to run the workflow
 
         :param input_data: Input data
         :type input_data: InputShowCommand
 
-        :rtype: str
+        :rtype: dict
         :return: The show command
         """
 
@@ -177,32 +178,60 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
             ),
         )
 
-        device_type = nbot_data["data"]["devices"][0]["platform"]["network_driver_mappings"]["netmiko"]
-        host = nbot_data["data"]["devices"][0]["primary_ip4"]["host"]
+        parse_tasks = []
+        for device in nbot_data["data"]["devices"]:
+            parse_tasks.append(
+                asyncio.create_task(
+                    workflow.execute_activity(
+                        activity=run_show_command_parse_with_ntc_templates_activity,
+                        arg=InputNetmikoCommand(
+                            command=input_data.command,
+                            host=device["primary_ip4"]["host"],
+                            device_type=device["platform"]["network_driver_mappings"]["netmiko"],
+                        ),
+                        schedule_to_close_timeout=timedelta(minutes=10),
+                        retry_policy=RetryPolicy(
+                            backoff_coefficient=2.0,
+                            maximum_attempts=5,
+                            initial_interval=timedelta(seconds=1),
+                            maximum_interval=timedelta(seconds=2),
+                        ),
+                    )
+                )
+            )
 
-        await workflow.execute_activity(
-            activity=run_show_command_parse_with_ntc_templates_activity,
-            arg=InputNetmikoCommand(command=input_data.command, host=host, device_type=device_type),
-            schedule_to_close_timeout=timedelta(minutes=10),
-            retry_policy=RetryPolicy(
-                backoff_coefficient=2.0,
-                maximum_attempts=5,
-                initial_interval=timedelta(seconds=1),
-                maximum_interval=timedelta(seconds=2),
-            ),
-        )
+        parsed_data = await asyncio.gather(*parse_tasks)
 
-        return await workflow.execute_activity(
-            activity=run_show_command_activity,
-            arg=InputNetmikoCommand(command=input_data.command, host=host, device_type=device_type),
-            schedule_to_close_timeout=timedelta(minutes=10),
-            retry_policy=RetryPolicy(
-                backoff_coefficient=2.0,
-                maximum_attempts=5,
-                initial_interval=timedelta(seconds=1),
-                maximum_interval=timedelta(seconds=2),
-            ),
-        )
+        string_tasks = []
+        for device in nbot_data["data"]["devices"]:
+            string_tasks.append(
+                asyncio.create_task(
+                    workflow.execute_activity(
+                        activity=run_show_command_activity,
+                        arg=InputNetmikoCommand(
+                            command=input_data.command,
+                            host=device["primary_ip4"]["host"],
+                            device_type=device["platform"]["network_driver_mappings"]["netmiko"],
+                        ),
+                        schedule_to_close_timeout=timedelta(minutes=10),
+                        retry_policy=RetryPolicy(
+                            backoff_coefficient=2.0,
+                            maximum_attempts=5,
+                            initial_interval=timedelta(seconds=1),
+                            maximum_interval=timedelta(seconds=2),
+                        ),
+                    )
+                )
+            )
+
+        string_tasks_data = await asyncio.gather(*string_tasks)
+
+        results = {
+            "terminal": string_tasks_data,
+            "parsed": parsed_data,
+        }
+
+        return results
 
 
 @workflow.defn(name="run-render-configuration-workflow")
@@ -210,13 +239,13 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
     """This is a workflow to run a configuration rendering"""
 
     @workflow.run
-    async def run(self, input_data: InputRenderConfiguration) -> str:
+    async def run(self, input_data: InputRenderConfiguration) -> tuple[str]:
         """Method to run the workflow
 
         :param input_data: Input data
         :type input_data: InputRenderConfiguration
 
-        :rtype: str
+        :rtype: tuple[str]
         :return: The rendered configuration
         """
 
@@ -234,19 +263,27 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
             ),
         )
 
-        device = nbot_data["data"]["devices"][0]
+        tasks = []
+        for device in nbot_data["data"]["devices"]:
+            tasks.append(
+                asyncio.create_task(
+                    workflow.execute_activity(
+                        activity=run_render_jinja2_activity,
+                        arg=InputRenderJinja2(template=input_data.jinja_2.template, variable_data=device),
+                        schedule_to_close_timeout=timedelta(minutes=10),
+                        retry_policy=RetryPolicy(
+                            backoff_coefficient=2.0,
+                            maximum_attempts=5,
+                            initial_interval=timedelta(seconds=1),
+                            maximum_interval=timedelta(seconds=2),
+                        ),
+                    )
+                )
+            )
 
-        return await workflow.execute_activity(
-            activity=run_render_jinja2_activity,
-            arg=InputRenderJinja2(template=input_data.jinja_2.template, variable_data=device),
-            schedule_to_close_timeout=timedelta(minutes=10),
-            retry_policy=RetryPolicy(
-                backoff_coefficient=2.0,
-                maximum_attempts=5,
-                initial_interval=timedelta(seconds=1),
-                maximum_interval=timedelta(seconds=2),
-            ),
-        )
+        results = await asyncio.gather(*tasks)
+
+        return results
 
 
 ALL_WORKFLOWS: Sequence[type] = [

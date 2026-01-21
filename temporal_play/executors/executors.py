@@ -172,7 +172,9 @@ async def run_render_configuration_workflow(client: Client, task_queue: str) -> 
         workflow="run-render-configuration-workflow",
         arg=InputRenderConfiguration(
             jinja_2=InputRenderJinja2(template=JINJA_2_TEMPLATE, variable_data={}),
-            nautobot_query=InputDataNautobotGQLQuery(query=QUERY, variables={"device_name": "3560G_A"}),
+            nautobot_query=InputDataNautobotGQLQuery(
+                query=QUERY, variables={"device_name": ["3560G_A", "3560G_B", "3560G_C", "3560G_D"]}
+            ),
         ),
         id=f"run-render-configuration-workflow-{uuid.uuid4()}",
         task_queue=task_queue,
@@ -219,7 +221,7 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type task_queue: str
     """
     client = await Client.connect(f"{host}:{port}")
-    await run_show_command_workflow(client=client, task_queue=task_queue)
+    await run_render_configuration_workflow(client=client, task_queue=task_queue)
 
 
 async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
