@@ -18,6 +18,7 @@ from temporal_play.schemas.schemas import (
     InputNetmikoCommand,
     InputRenderJinja2,
     InputRenderConfiguration,
+    InputGitRepository,
 )
 
 from temporal_play.activities.activities import (
@@ -26,6 +27,7 @@ from temporal_play.activities.activities import (
     run_show_command_activity,
     run_show_command_parse_with_ntc_templates_activity,
     run_render_jinja2_activity,
+    run_clone_git_repository_activity,
 )
 
 
@@ -286,10 +288,39 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
         return results
 
 
+@workflow.defn(name="run-clone-git-repository-workflow")
+class RunCloneGitRepositoryWorkflow:  # pylint: disable=too-few-public-methods
+    """This is a workflow to clone a git repository"""
+
+    @workflow.run
+    async def run(self, input_data: InputGitRepository) -> str:
+        """Method to run the workflow
+
+        :param input_data: Input data
+        :type input_data: InputGitRepository
+
+        :rtype: str
+        :return: The cloned path
+        """
+
+        return await workflow.execute_activity(
+            activity=run_clone_git_repository_activity,
+            arg=input_data,
+            schedule_to_close_timeout=timedelta(minutes=10),
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+            ),
+        )
+
+
 ALL_WORKFLOWS: Sequence[type] = [
     SayHelloWorkFlow,
     RunNautobotGqlQueryWorkflow,
     RunNautobotGqlQueryWorkflowWithApproval,
     RunShowCommandWorkflow,
     RunRenderConfigurationWorkflow,
+    RunCloneGitRepositoryWorkflow,
 ]

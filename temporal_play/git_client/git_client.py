@@ -59,7 +59,7 @@ class GitClient:
             to_path=self._clone_path.as_posix(),
         )
 
-        await asyncio.to_thread(cloned_repo.git_fetch, "--all", "--tags")
+        await asyncio.to_thread(cloned_repo.git.fetch, "--all", "--tags")
 
         if branch_or_tag:
             await asyncio.to_thread(cloned_repo.git_checkout, branch_or_tag)

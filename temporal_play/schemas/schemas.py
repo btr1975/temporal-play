@@ -2,7 +2,7 @@
 schemas
 """
 
-from dataclasses import dataclass, Field
+from dataclasses import dataclass
 
 
 @dataclass
