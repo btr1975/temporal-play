@@ -154,6 +154,28 @@ async def run_clone_git_repository_workflow(client: Client, task_queue: str) -> 
     print(f"Workflow Result {result}")
 
 
+async def run_clone_git_repository_nexus_workflow(client: Client, task_queue: str) -> None:
+    """Run a workflow run-clone-git-repository-workflow via client.execute_workflow, using that method just
+       executes the workflow it does not hand back a handler to deal with signaling and such
+
+    :param client: The temporal client object
+    :type client: Client
+    :param task_queue: The task queue name
+    :type task_queue: str
+
+    :rtype: None
+    :returns: Nothing
+    """
+    result = await client.execute_workflow(
+        workflow="run-clone-git-repository-workflow",
+        arg=InputGitRepository(repository="https://github.com/btr1975/pyats-genie-command-parse", branch_or_tag=None),
+        id=f"run-clone-git-repository-workflow-{uuid.uuid4()}",
+        task_queue=task_queue,
+    )
+
+    print(f"Workflow Result {result}")
+
+
 async def run_show_command_workflow(client: Client, task_queue: str) -> None:
     """Run a workflow run-nautobot-gql-query-workflow via client.execute_workflow, using that method just
        executes the workflow it does not hand back a handler to deal with signaling and such
@@ -249,7 +271,7 @@ async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     :returns: Nothing
     """
     client = await Client.connect(f"{host}:{port}", namespace=namespace)
-    await run_clone_git_repository_workflow(client=client, task_queue=task_queue)
+    await run_clone_git_repository_nexus_workflow(client=client, task_queue=task_queue)
 
 
 async def main_run_multiple(host: str, port: int, task_queue: str, namespace: str) -> None:
@@ -277,4 +299,4 @@ async def main_run_multiple(host: str, port: int, task_queue: str, namespace: st
 
 
 if __name__ == "__main__":
-    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="default"))
+    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-2"))

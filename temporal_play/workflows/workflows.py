@@ -316,6 +316,35 @@ class RunCloneGitRepositoryWorkflow:  # pylint: disable=too-few-public-methods
         )
 
 
+@workflow.defn(name="run-clone-git-repository-nexus-workflow")
+class RunCloneGitRepositoryNexusWorkflow:  # pylint: disable=too-few-public-methods
+    """This is a workflow to clone a git repository using nexus"""
+
+    def __init__(self):
+        self.nexus_client = workflow.create_nexus_client(
+            service="nexus-my-nexus-services",
+            endpoint="default-nexus-service",
+        )
+
+    @workflow.run
+    async def run(self, input_data: InputGitRepository) -> str:
+        """Method to run the workflow
+
+        :param input_data: Input data
+        :type input_data: InputGitRepository
+
+        :rtype: str
+        :return: The cloned path
+        """
+
+        result = await self.nexus_client.execute_operation(
+            operation="clone",
+            input=input_data,
+        )
+
+        return result
+
+
 ALL_WORKFLOWS: Sequence[type] = [
     SayHelloWorkFlow,
     RunNautobotGqlQueryWorkflow,
@@ -323,4 +352,5 @@ ALL_WORKFLOWS: Sequence[type] = [
     RunShowCommandWorkflow,
     RunRenderConfigurationWorkflow,
     RunCloneGitRepositoryWorkflow,
+    RunCloneGitRepositoryNexusWorkflow,
 ]
