@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 import asyncio
 from dotenv import load_dotenv
 from temporal_play.workers.worker_1 import main as worker_1
+from temporal_play.nexus.workers.workers import main as nexus_worker
 
 
 load_dotenv()
@@ -41,10 +42,15 @@ def cli_argument_parser() -> ArgumentParser:
     )
     subparsers.required = True
 
-    # This is the sub parser to start worker
+    # This is the sub parser to start a worker
     arg_parser_worker = subparsers.add_parser("worker", help="Start Worker")
     arg_parser_worker.set_defaults(which_sub="worker")
     worker_common_arguments(arg_parser_worker)
+
+    # This is the sub parser to start a nexus worker
+    arg_parser_nexus_worker = subparsers.add_parser("nexus-worker", help="Start Nexus Worker")
+    arg_parser_nexus_worker.set_defaults(which_sub="nexus-worker")
+    worker_common_arguments(arg_parser_nexus_worker)
 
     return arg_parser
 
@@ -63,6 +69,11 @@ def cli() -> None:
         if args.which_sub == "worker":
             asyncio.run(
                 worker_1(host=args.address, port=args.port, task_queue=args.task_queue, namespace=args.namespace)
+            )
+
+        if args.which_sub == "nexus-worker":
+            asyncio.run(
+                nexus_worker(host=args.address, port=args.port, task_queue=args.task_queue, namespace=args.namespace)
             )
 
     except AttributeError as error:
