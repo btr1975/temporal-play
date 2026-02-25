@@ -46,7 +46,7 @@ def get_worker(client: Client, task_queue: str) -> Worker:
     return worker
 
 
-async def main(host: str, port: int, task_queue: str) -> None:
+async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     """Main function
 
     :param host: Host IP address
@@ -55,15 +55,17 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type port: int
     :param task_queue: Task queue name
     :type task_queue: str
+    :param namespace: Worker namespace
+    :type namespace: str
 
     :rtype: None
     :returns: Nothing
     """
-    client = await Client.connect(target_host=f"{host}:{port}")
+    client = await Client.connect(target_host=f"{host}:{port}", namespace=namespace)
     worker = get_worker(client=client, task_queue=task_queue)
     await worker.run()
     print("Worker Started")
 
 
 if __name__ == "__main__":
-    asyncio.run(main(host="127.0.0.1", port=8081, task_queue="my-task-queue"))
+    asyncio.run(main(host="127.0.0.1", port=8081, task_queue="my-task-queue", namespace="default"))

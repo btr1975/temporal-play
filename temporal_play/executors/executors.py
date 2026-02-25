@@ -210,7 +210,7 @@ async def run_nautobot_gql_query_workflow_with_approval(client: Client, task_que
     print(f"Workflow Result {result}")
 
 
-async def main(host: str, port: int, task_queue: str) -> None:
+async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     """Main function
 
     :param host: The temporal host
@@ -219,12 +219,17 @@ async def main(host: str, port: int, task_queue: str) -> None:
     :type port: int
     :param task_queue: The name of the task queue
     :type task_queue: str
+    :param namespace: The namespace
+    :type namespace: str
+
+    :rtype: None
+    :returns: Nothing
     """
-    client = await Client.connect(f"{host}:{port}")
+    client = await Client.connect(f"{host}:{port}", namespace=namespace)
     await run_render_configuration_workflow(client=client, task_queue=task_queue)
 
 
-async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
+async def main_run_multiple(host: str, port: int, task_queue: str, namespace: str) -> None:
     """Main function
 
     :param host: The temporal host
@@ -233,8 +238,13 @@ async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
     :type port: int
     :param task_queue: The name of the task queue
     :type task_queue: str
+    :param namespace: The namespace
+    :type namespace: str
+
+    :rtype: None
+    :returns: Nothing
     """
-    client = await Client.connect(f"{host}:{port}")
+    client = await Client.connect(f"{host}:{port}", namespace=namespace)
 
     tasks = []
     for _ in range(10):
@@ -244,4 +254,4 @@ async def main_run_multiple(host: str, port: int, task_queue: str) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue"))
+    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="default"))

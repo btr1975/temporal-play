@@ -51,7 +51,7 @@ dependencies = [
     "niquests>=3.16.1",
     "paramiko>=4.0.0",
     "python-dotenv>=1.2.1",
-    "temporalio>=1.21.1",
+    "temporalio>=1.23.0",
 ]
 
 [dependency-groups]

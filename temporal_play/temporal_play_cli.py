@@ -11,6 +11,21 @@ from temporal_play.workers.worker_1 import main as worker_1
 load_dotenv()
 
 
+def worker_common_arguments(arg_parser: ArgumentParser) -> None:
+    """Common worker arguments
+
+    :type arg_parser: ArgumentParser
+    :param arg_parser: The argument parser
+
+    :rtype: None
+    :returns: Nothing
+    """
+    arg_parser.add_argument("-a", "--address", required=True, help="The Temporal IP address")
+    arg_parser.add_argument("-n", "--namespace", required=True, help="The Temporal Namespace")
+    arg_parser.add_argument("-p", "--port", required=True, help="The Temporal Port Number")
+    arg_parser.add_argument("-t", "--task-queue", required=True, help="The Temporal Task Queue Name")
+
+
 def cli_argument_parser() -> ArgumentParser:
     """Function to create the argument parser
 
@@ -27,11 +42,9 @@ def cli_argument_parser() -> ArgumentParser:
     subparsers.required = True
 
     # This is the sub parser to start worker
-    arg_parser_hello = subparsers.add_parser("worker", help="Start Worker")
-    arg_parser_hello.set_defaults(which_sub="worker")
-    arg_parser_hello.add_argument("-a", "--address", required=True, help="The Temporal IP address")
-    arg_parser_hello.add_argument("-p", "--port", required=True, help="The Temporal Port Number")
-    arg_parser_hello.add_argument("-t", "--task-queue", required=True, help="The Temporal Task Queue Name")
+    arg_parser_worker = subparsers.add_parser("worker", help="Start Worker")
+    arg_parser_worker.set_defaults(which_sub="worker")
+    worker_common_arguments(arg_parser_worker)
 
     return arg_parser
 
@@ -48,7 +61,9 @@ def cli() -> None:
         args = arg_parser.parse_args()
 
         if args.which_sub == "worker":
-            asyncio.run(worker_1(host=args.address, port=args.port, task_queue=args.task_queue))
+            asyncio.run(
+                worker_1(host=args.address, port=args.port, task_queue=args.task_queue, namespace=args.namespace)
+            )
 
     except AttributeError as error:
         print(f"\n !!! {error} !!! \n")
