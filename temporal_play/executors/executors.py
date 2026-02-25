@@ -254,4 +254,4 @@ async def main_run_multiple(host: str, port: int, task_queue: str, namespace: st
 
 
 if __name__ == "__main__":
-    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="default"))
+    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="default"))

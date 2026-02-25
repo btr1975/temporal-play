@@ -2,7 +2,7 @@
 schemas
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, Field
 
 
 @dataclass
@@ -60,3 +60,11 @@ class InputDataApprover:
 
     name: str
     approve: bool = False
+
+
+@dataclass
+class InputGitRepository:
+    """Input for a git repository"""
+
+    repository: str
+    branch_or_tag: str | None = None

@@ -3,16 +3,26 @@ activities
 """
 
 import os
+import uuid
+import tempfile
+from pathlib import Path
 import temporalio.workflow
 from temporalio.exceptions import ApplicationError
 from temporalio import activity
-from temporal_play.schemas.schemas import InputData, InputDataNautobotGQLQuery, InputNetmikoCommand, InputRenderJinja2
+from temporal_play.schemas.schemas import (
+    InputData,
+    InputDataNautobotGQLQuery,
+    InputNetmikoCommand,
+    InputRenderJinja2,
+    InputGitRepository,
+)
 
 with temporalio.workflow.unsafe.imports_passed_through():
     from temporal_play.nautobot_gql_client.nautobot_gql_client import NautobotGqlClient
     from temporal_play.hvac_client.hvac_client import HvacClient
     from temporal_play.netmiko_client.netmiko_client import NetmikoClient
     from temporal_play.rendering.rendering import render_jinja2_template
+    from temporal_play.git_client.git_client import GitClient
 
 
 @activity.defn(name="say-hello-activity")
@@ -154,10 +164,47 @@ async def run_render_jinja2_activity(input_data: InputRenderJinja2) -> str:
     return data
 
 
+@activity.defn(name="run-clone-git-repository-activity")
+async def run_clone_git_repository_activity(input_data: InputGitRepository) -> str:
+    """This activity clones a git repository
+
+    :param input_data: input data
+    :type input_data: InputGitRepository
+
+    :rtype: str
+    :return: The cloned path
+    """
+    try:
+        secrets_client = HvacClient(
+            host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
+        )
+        github_secrets = await secrets_client.get_secret("/github")
+
+        clone_path = Path(tempfile.gettempdir()) / str(uuid.uuid4())
+
+        git_client = GitClient(
+            username="__token__",
+            password=github_secrets["token"],
+            repository=input_data.repository,
+            clone_path=clone_path.as_posix(),
+        )
+
+        await git_client.clone(branch_or_tag=input_data.branch_or_tag)
+
+    except Exception as e:
+        raise ApplicationError(
+            message="",
+            non_retryable=False,
+        ) from e
+
+    return clone_path.as_posix()
+
+
 ALL_ACTIVITIES = [
     say_hello_activity,
     get_nautobot_gql_data,
     run_show_command_activity,
     run_show_command_parse_with_ntc_templates_activity,
     run_render_jinja2_activity,
+    run_clone_git_repository_activity,
 ]
