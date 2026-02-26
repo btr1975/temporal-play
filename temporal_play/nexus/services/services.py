@@ -8,7 +8,7 @@ from temporal_play.schemas.schemas import InputGitRepository, InputRenderConfigu
 
 
 @nexusrpc.service(name="nexus-my-nexus-services")
-class MyNexusServices:
+class MyNexusServices:  # pylint: disable=too-few-public-methods
     """Temporal Nexus Services
     This defines operations available to the handler
 

@@ -155,7 +155,7 @@ async def run_clone_git_repository_workflow(client: Client, task_queue: str) -> 
 
 
 async def run_clone_git_repository_nexus_workflow(client: Client, task_queue: str) -> None:
-    """Run a workflow run-clone-git-repository-workflow via client.execute_workflow, using that method just
+    """Run a workflow run-clone-git-repository-nexus-workflow via a nexus service, using that method just
        executes the workflow it does not hand back a handler to deal with signaling and such
 
     :param client: The temporal client object
@@ -229,7 +229,7 @@ async def run_render_configuration_workflow(client: Client, task_queue: str) -> 
 
 
 async def run_render_configuration_nexus_workflow(client: Client, task_queue: str) -> None:
-    """Run a workflow run-render-configuration-workflow via client.execute_workflow, using that method just
+    """Run a workflow run-render-configuration-nexus-workflow via a nexus client, using that method just
        executes the workflow it does not hand back a handler to deal with signaling and such
 
     :param client: The temporal client object

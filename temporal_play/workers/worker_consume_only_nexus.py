@@ -1,5 +1,5 @@
 """
-Worker 1
+Worker that consumes ONLY nexus workflows
 """
 
 import asyncio
