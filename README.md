@@ -12,6 +12,7 @@
 
 * [Temporal Website](https://temporal.io/)
 * [Temporal Docs](https://docs.temporal.io/)
+* [Temporal Rules](https://github.com/temporalio/rules/tree/main)
 
 ## Temporal SDK Information
 
