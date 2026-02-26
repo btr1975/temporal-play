@@ -12,7 +12,9 @@
 
 * [Temporal Website](https://temporal.io/)
 * [Temporal Docs](https://docs.temporal.io/)
+* [Temporal Cloud Security](https://docs.temporal.io/cloud/security)
 * [Temporal Rules](https://github.com/temporalio/rules/tree/main)
+* [My Notes on Secrets Usage in Temporal](./temporal_play/hvac_client/README.md)
 
 ## Temporal SDK Information
 
