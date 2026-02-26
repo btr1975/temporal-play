@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 import asyncio
 from dotenv import load_dotenv
 from temporal_play.workers.worker_1 import main as worker_1
+from temporal_play.workers.worker_consume_only_nexus import main as worker_nexus_consume
 from temporal_play.nexus.workers.workers import main as nexus_worker
 
 
@@ -47,6 +48,11 @@ def cli_argument_parser() -> ArgumentParser:
     arg_parser_worker.set_defaults(which_sub="worker")
     worker_common_arguments(arg_parser_worker)
 
+    # This is the sub parser to start a worker that only consumes nexus
+    arg_parser_worker_consume_nexus = subparsers.add_parser("worker-consume-nexus", help="Start Worker Consume Nexus")
+    arg_parser_worker_consume_nexus.set_defaults(which_sub="worker-consume-nexus")
+    worker_common_arguments(arg_parser_worker_consume_nexus)
+
     # This is the sub parser to start a nexus worker
     arg_parser_nexus_worker = subparsers.add_parser("nexus-worker", help="Start Nexus Worker")
     arg_parser_nexus_worker.set_defaults(which_sub="nexus-worker")
@@ -69,6 +75,13 @@ def cli() -> None:
         if args.which_sub == "worker":
             asyncio.run(
                 worker_1(host=args.address, port=args.port, task_queue=args.task_queue, namespace=args.namespace)
+            )
+
+        if args.which_sub == "worker-consume-nexus":
+            asyncio.run(
+                worker_nexus_consume(
+                    host=args.address, port=args.port, task_queue=args.task_queue, namespace=args.namespace
+                )
             )
 
         if args.which_sub == "nexus-worker":
