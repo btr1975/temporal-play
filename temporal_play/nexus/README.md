@@ -6,7 +6,8 @@ Services, Handlers, and Workers.
 # Nexus Services
 
 Nexus services define operations available from the nexus endpoint, and
-the operations input, and output data models.
+the operations input, and output data models.  They are used in nexus service
+handlers.
 
 * [Services](./services/services.py)
 
@@ -42,3 +43,18 @@ result = await self.nexus_client.execute_operation(
 ```
 
 Notice the usage is the operation name, and the input data needed.
+
+
+# Nexus Service Handlers
+
+Nexus service handlers implement the nexus service operations.
+
+* [Service Handlers](./handlers/handlers.py)
+
+If you look at the class definition you will notice
+it is decorated with '@nexusrpc.handler.service_handler(service=MyNexusServices)'.
+This is what associates the service handler with the service itself.
+
+The methods are decorated with this '@nexus.workflow_run_operation' there are other
+but this means we are going to start a workflow from this method.  The method itself
+is named by the operation in the service.
