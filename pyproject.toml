@@ -88,7 +88,7 @@ include = [
 
 # Add or remove file extensions to include the data
 [tool.setuptools.package-data]
-"*" = ["*.txt", "*.rst"]
+"*" = ["*.md"]
 
 [tool.setuptools]
 zip-safe = false
