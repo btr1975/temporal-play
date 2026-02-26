@@ -3,6 +3,7 @@ Nexus workers
 """
 
 import asyncio
+import logging
 
 from temporalio.client import Client
 from temporalio.worker import Worker
@@ -19,6 +20,7 @@ def get_nexus_worker(client: Client, task_queue: str) -> Worker:
 
     :return: Nexus worker
     """
+    logging.basicConfig(level=logging.INFO)
     print("Starting Nexus Worker")
     worker = Worker(
         client=client,

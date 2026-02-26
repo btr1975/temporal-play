@@ -5,6 +5,7 @@ Worker 1
 import asyncio
 import inspect
 from concurrent.futures import ThreadPoolExecutor
+import logging
 
 from temporalio.client import Client
 from temporalio.worker import Worker
@@ -24,6 +25,7 @@ def get_worker(client: Client, task_queue: str) -> Worker:
     :rtype: Worker
     :returns: A Worker instance
     """
+    logging.basicConfig(level=logging.INFO)
     if all(inspect.iscoroutinefunction(activity) for activity in ALL_ACTIVITIES):
         print("Using Async Worker")
         worker = Worker(

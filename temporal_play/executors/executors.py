@@ -167,9 +167,9 @@ async def run_clone_git_repository_nexus_workflow(client: Client, task_queue: st
     :returns: Nothing
     """
     result = await client.execute_workflow(
-        workflow="run-clone-git-repository-workflow",
+        workflow="run-clone-git-repository-nexus-workflow",
         arg=InputGitRepository(repository="https://github.com/btr1975/pyats-genie-command-parse", branch_or_tag=None),
-        id=f"run-clone-git-repository-workflow-{uuid.uuid4()}",
+        id=f"run-clone-git-repository-nexus-workflow-{uuid.uuid4()}",
         task_queue=task_queue,
     )
 

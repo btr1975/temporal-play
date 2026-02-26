@@ -48,6 +48,7 @@ class SayHelloWorkFlow:  # pylint: disable=too-few-public-methods
         :rtype: str
         :return: Hello World
         """
+        workflow.logger.info("starting say-hello-workflow")
 
         return await workflow.execute_activity(
             activity=say_hello_activity,
@@ -74,6 +75,7 @@ class RunNautobotGqlQueryWorkflowWithApproval:
         :rtype: dict
         :return: Nautobot data
         """
+        workflow.logger.info("starting run-nautobot-gql-query-workflow-with-approval")
 
         await workflow.execute_activity(
             activity=say_hello_activity,
@@ -137,6 +139,7 @@ class RunNautobotGqlQueryWorkflow:  # pylint: disable=too-few-public-methods
         :rtype: dict
         :return: Nautobot data
         """
+        workflow.logger.info("starting run-nautobot-gql-query-workflow")
 
         return await workflow.execute_activity(
             activity=get_nautobot_gql_data,
@@ -165,6 +168,7 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
         :rtype: dict
         :return: The show command
         """
+        workflow.logger.info("starting run-show-command-workflow")
 
         nbot_data = await workflow.execute_activity(
             activity=get_nautobot_gql_data,
@@ -250,6 +254,7 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
         :rtype: tuple[str]
         :return: The rendered configuration
         """
+        workflow.logger.info("starting run-render-configuration-workflow")
 
         nbot_data = await workflow.execute_activity(
             activity=get_nautobot_gql_data,
@@ -302,6 +307,7 @@ class RunCloneGitRepositoryWorkflow:  # pylint: disable=too-few-public-methods
         :rtype: str
         :return: The cloned path
         """
+        workflow.logger.info("starting run-clone-git-repository-workflow")
 
         return await workflow.execute_activity(
             activity=run_clone_git_repository_activity,
@@ -336,6 +342,7 @@ class RunCloneGitRepositoryNexusWorkflow:  # pylint: disable=too-few-public-meth
         :rtype: str
         :return: The cloned path
         """
+        workflow.logger.info("starting run-clone-git-repository-nexus-workflow")
 
         result = await self.nexus_client.execute_operation(
             operation="clone",
