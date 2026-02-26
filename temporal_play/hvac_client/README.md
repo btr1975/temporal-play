@@ -1,11 +1,11 @@
 # HashicorpVault Usage
 
-This is just some important information about using HashicorpVault or really and other secrets manger in Temporal.  
+This is just some important information about using HashicorpVault or really any other secrets manger in Temporal.  
 The **MOST IMPORTANT RULE** is **NEVER** pass a secret as an input **OR** output of a workflow **OR** activity.  
 Remember how temporal works.  The temporal system durably stores inputs **AND** outputs, but **ALL** code execution 
 happens in your workers.  If you must pass PI (Personal Information) or PII (Personally Identifiable Information) in 
 inputs **OR** outputs you **MUST** use a [data converter](https://docs.temporal.io/dataconversion) to encrypt and 
-decrypt the data.  That way when temporal stores it, it is stored encrypted, and hopefully on you have the keys.
+decrypt the data.  That way when temporal stores it, it is stored encrypted, and hopefully only you have the keys.
 
 ## Recommend Practice
 
