@@ -361,3 +361,14 @@ ALL_WORKFLOWS: Sequence[type] = [
     RunCloneGitRepositoryWorkflow,
     RunCloneGitRepositoryNexusWorkflow,
 ]
+
+
+# These are Workflows that are used by a Temporal Nexus Worker
+ALL_WORKFLOWS_FOR_NEXUS_WORKERS: Sequence[type] = [
+    RunCloneGitRepositoryWorkflow,
+]
+
+# These are Workflows that are called through a Nexus Endpoint
+ALL_NEXUS_WORKFLOWS: Sequence[type] = [
+    RunCloneGitRepositoryNexusWorkflow,
+]
