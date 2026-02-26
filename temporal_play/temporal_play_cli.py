@@ -2,6 +2,7 @@
 CLI for temporal_play
 """
 
+import os
 from argparse import ArgumentParser
 import asyncio
 from dotenv import load_dotenv
@@ -11,6 +12,15 @@ from temporal_play.nexus.workers.workers import main as nexus_worker
 
 
 load_dotenv()
+
+if not os.getenv("HVAC_HOST"):
+    raise EnvironmentError("missing required environment variable HVAC_HOST!")
+
+if not os.getenv("HVAC_PORT"):
+    raise EnvironmentError("missing required environment variable HVAC_PORT!")
+
+if not os.getenv("HVAC_TOKEN"):
+    raise EnvironmentError("missing required environment variable HVAC_TOKEN!")
 
 
 def worker_common_arguments(arg_parser: ArgumentParser) -> None:
