@@ -10,6 +10,9 @@
 
 # Some Information
 
+* [Temporal Website](https://temporal.io/)
+* [Temporal Docs](https://docs.temporal.io/)
+
 ## Temporal SDK Information
 
 * [Python SDK](https://python.temporal.io/)
@@ -18,7 +21,13 @@
 * [Java](https://javadoc.io/doc/io.temporal/temporal-sdk/latest/index.html)
 * [TypeScript](https://typescript.temporal.io/)
 * [PHP](https://php.temporal.io/)
+* [Ruby](https://ruby.temporal.io/)
 
 ## This Repository Information
 
+* [Example Schemas](./temporal_play/schemas/README.md)
+* [Example Activities](./temporal_play/activities/README.md)
+* [Example WorkFlows](./temporal_play/workflows/README.md)
+* [Example Workers](./temporal_play/workers/README.md)
 * [Example Temporal Nexus](./temporal_play/nexus/README.md)
+* [Example Executors / Callers](./temporal_play/executors/README.md)

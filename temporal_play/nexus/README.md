@@ -58,3 +58,13 @@ This is what associates the service handler with the service itself.
 The methods are decorated with this '@nexus.workflow_run_operation' there are other
 but this means we are going to start a workflow from this method.  The method itself
 is named by the operation in the service.
+
+# Nexus Workers
+
+Nexus workers are really just created like any other temporal worker.
+
+* [Workers](./workers/workers.py)
+* [A Nexus Worker Creator](./workers/nexus_worker_creator.py)
+
+The only things that make it "special" is adding "nexus_service_handlers" this option to the worker.  Other
+than that not much else is special.
