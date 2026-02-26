@@ -7,7 +7,7 @@ import nexusrpc.handler
 from temporalio import nexus
 
 from temporal_play.nexus.services.services import MyNexusServices
-from temporal_play.schemas.schemas import InputGitRepository
+from temporal_play.schemas.schemas import InputGitRepository, InputRenderConfiguration
 
 
 @nexusrpc.handler.service_handler(service=MyNexusServices)
@@ -28,4 +28,20 @@ class MyNexusServicesHandler:
             workflow="run-clone-git-repository-workflow",
             arg=input_data,
             id=f"nexus-run-clone-git-repository-workflow-{str(uuid.uuid4())}",
+        )
+
+    @nexus.workflow_run_operation
+    async def render_config(
+        self, ctx: nexus.WorkflowRunOperationContext, input_data: InputRenderConfiguration
+    ) -> nexus.WorkflowHandle[tuple[str]]:
+        """Implementation of the render_config operation
+
+        :param ctx: Nexus workflow run context
+        :param input_data: Nexus workflow run input data
+        """
+
+        return await ctx.start_workflow(
+            workflow="run-render-configuration-workflow",
+            arg=input_data,
+            id=f"nexus-run-render-configuration-workflow-{str(uuid.uuid4())}",
         )

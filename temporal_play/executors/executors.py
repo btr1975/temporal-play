@@ -228,6 +228,33 @@ async def run_render_configuration_workflow(client: Client, task_queue: str) -> 
     print(f"Workflow Result {result}")
 
 
+async def run_render_configuration_nexus_workflow(client: Client, task_queue: str) -> None:
+    """Run a workflow run-render-configuration-workflow via client.execute_workflow, using that method just
+       executes the workflow it does not hand back a handler to deal with signaling and such
+
+    :param client: The temporal client object
+    :type client: Client
+    :param task_queue: The task queue name
+    :type task_queue: str
+
+    :rtype: None
+    :returns: Nothing
+    """
+    result = await client.execute_workflow(
+        workflow="run-render-configuration-nexus-workflow",
+        arg=InputRenderConfiguration(
+            jinja_2=InputRenderJinja2(template=JINJA_2_TEMPLATE, variable_data={}),
+            nautobot_query=InputDataNautobotGQLQuery(
+                query=QUERY, variables={"device_name": ["3560G_A", "3560G_B", "3560G_C", "3560G_D"]}
+            ),
+        ),
+        id=f"run-render-configuration-nexus-workflow-{uuid.uuid4()}",
+        task_queue=task_queue,
+    )
+
+    print(f"Workflow Result {result}")
+
+
 async def run_nautobot_gql_query_workflow_with_approval(client: Client, task_queue: str) -> None:
     """Run a run-nautobot-gql-query-workflow-with-approval via client.start_workflow, using that method
        gives back a handler to deal with signaling and such, also this is how you start a workflow without
@@ -271,7 +298,7 @@ async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     :returns: Nothing
     """
     client = await Client.connect(f"{host}:{port}", namespace=namespace)
-    await run_clone_git_repository_nexus_workflow(client=client, task_queue=task_queue)
+    await run_render_configuration_nexus_workflow(client=client, task_queue=task_queue)
 
 
 async def main_run_multiple(host: str, port: int, task_queue: str, namespace: str) -> None:

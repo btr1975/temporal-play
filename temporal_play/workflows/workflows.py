@@ -352,6 +352,36 @@ class RunCloneGitRepositoryNexusWorkflow:  # pylint: disable=too-few-public-meth
         return result
 
 
+@workflow.defn(name="run-render-configuration-nexus-workflow")
+class RunRenderConfigurationNexusWorkflow:  # pylint: disable=too-few-public-methods
+    """This is a workflow to render a configuration using nexus"""
+
+    def __init__(self):
+        self.nexus_client = workflow.create_nexus_client(
+            service="nexus-my-nexus-services",
+            endpoint="default-nexus-service",
+        )
+
+    @workflow.run
+    async def run(self, input_data: InputRenderConfiguration) -> tuple[str]:
+        """Method to run the workflow
+
+        :param input_data: Input data
+        :type input_data: InputRenderConfiguration
+
+        :rtype: str
+        :return: The data
+        """
+        workflow.logger.info("starting run-render-configuration-nexus-workflow")
+
+        result = await self.nexus_client.execute_operation(
+            operation="render_config",
+            input=input_data,
+        )
+
+        return result
+
+
 ALL_WORKFLOWS: Sequence[type] = [
     SayHelloWorkFlow,
     RunNautobotGqlQueryWorkflow,
@@ -359,16 +389,17 @@ ALL_WORKFLOWS: Sequence[type] = [
     RunShowCommandWorkflow,
     RunRenderConfigurationWorkflow,
     RunCloneGitRepositoryWorkflow,
-    RunCloneGitRepositoryNexusWorkflow,
 ]
 
 
 # These are Workflows that are used by a Temporal Nexus Worker
 ALL_WORKFLOWS_FOR_NEXUS_WORKERS: Sequence[type] = [
     RunCloneGitRepositoryWorkflow,
+    RunRenderConfigurationWorkflow,
 ]
 
 # These are Workflows that are called through a Nexus Endpoint
 ALL_NEXUS_WORKFLOWS: Sequence[type] = [
     RunCloneGitRepositoryNexusWorkflow,
+    RunRenderConfigurationNexusWorkflow,
 ]
