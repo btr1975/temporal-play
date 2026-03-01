@@ -1137,7 +1137,9 @@ typing-extensions==4.15.0 \
 urllib3==2.6.3 \
     --hash=sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed \
     --hash=sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4
-    # via requests
+    # via
+    #   requests
+    #   temporal-play
 urllib3-future==2.15.901 \
     --hash=sha256:a8ca77c6a3c8c1172511f45ba4358d2a682474580f75b2d234b1e427c58c922f \
     --hash=sha256:e88e2a835a4b75fd3dc4e9ccb3ba71e1000a8a98a43e0975e1d5be652beb2507

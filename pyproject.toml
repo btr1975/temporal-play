@@ -53,6 +53,7 @@ dependencies = [
     "paramiko>=4.0.0",
     "python-dotenv>=1.2.1",
     "temporalio>=1.23.0",
+    "urllib3>=2.6.3",
 ]
 
 [dependency-groups]
