@@ -3,7 +3,27 @@ Yes I know there is an official client, I felt like writing one
 """
 
 import json
+from hashlib import sha224
+from typing import Any, Self
+from dataclasses import dataclass, field
 from niquests import AsyncSession, Response
+
+
+@dataclass
+class ChromaDbData:
+    ids: list[str] = field(default_factory=list)
+    embeddings: list = field(default_factory=list)
+    metadatas: list[dict[str, Any]] = field(default_factory=list)
+    documents: list[str] = field(default_factory=list)
+
+    def add(
+        self, document_id: str, document_embeddings: list, document: str, document_metadata: dict[str, Any]
+    ) -> Self:
+        self.ids.append(document_id)
+        self.embeddings.append(document_embeddings)
+        self.metadatas.append(document_metadata)
+        self.documents.append(document)
+        return self
 
 
 class SimpleOllamaClient:
@@ -76,6 +96,44 @@ class SimpleOllamaClient:
         result = await self._post(url=f"{self._base_url}/api/chat", json_data=data)
 
         return json.loads(result.text)
+
+    async def get_embeddings(self, model: str, data: str | list[str]) -> dict:
+        """Create embeddings
+
+        :param model: The name of the model to run
+        :param data: The data to get embeddings for
+
+        :returns: Dictionary of results
+        """
+        embed_data = {
+            "model": model,
+            "input": data,
+        }
+        result = await self._post(url=f"{self._base_url}/api/embed", json_data=embed_data)
+
+        return json.loads(result.text)
+
+    async def get_embeddings_for_chroma_db(self, model: str, data: str | list[str]) -> ChromaDbData:
+        """Create embeddings for Chroma DB
+
+        :param model: The name of the model to run
+        :param data: The data to get embeddings for
+
+        :returns: Chroma DB embeddings
+        """
+        data_class = ChromaDbData()
+        result = await self.get_embeddings(model=model, data=data)
+
+        for index, embedding in enumerate(result.get("embeddings")):
+            document = data[index]
+            data_class.add(
+                document_id=str(sha224(document.encode(), usedforsecurity=False).hexdigest()),
+                document_embeddings=embedding,
+                document_metadata={"information": "document"},
+                document=document,
+            )
+
+        return data_class
 
     async def get_models(self) -> dict:
         """Get models available

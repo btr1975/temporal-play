@@ -69,6 +69,7 @@ dev = [
     "bandit",
     "mypy",
     "pyyaml>=6.0.3",
+    "chromadb>=1.5.2",
 ]
 
 
