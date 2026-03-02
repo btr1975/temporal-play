@@ -124,14 +124,21 @@ class SimpleOllamaClient:
         data_class = ChromaDbData()
         result = await self.get_embeddings(model=model, data=data)
 
+        document_ids = set()
         for index, embedding in enumerate(result.get("embeddings")):
             document = data[index]
-            data_class.add(
-                document_id=str(sha224(document.encode(), usedforsecurity=False).hexdigest()),
-                document_embeddings=embedding,
-                document_metadata={"information": "document"},
-                document=document,
-            )
+            document_id = str(sha224(document.encode(), usedforsecurity=False).hexdigest())
+            if document_id in document_ids:
+                continue
+            else:
+                document_ids.add(document_id)
+                data_class.add(
+                    document_id=document_id,
+                    document_embeddings=embedding,
+                    document_metadata={"information": "document"},
+                    document=document,
+                )
+                document_ids.add(document_id)
 
         return data_class
 

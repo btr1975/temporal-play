@@ -70,6 +70,8 @@ dev = [
     "mypy",
     "pyyaml>=6.0.3",
     "chromadb>=1.5.2",
+    "pypdf>=6.7.4",
+    "nltk>=3.9.3",
 ]
 
 
