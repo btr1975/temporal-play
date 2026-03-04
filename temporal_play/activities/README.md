@@ -50,3 +50,17 @@ async def say_hello_activity(input_data: InputData) -> str:
 
 In your activities it is a great idea to use the temporal built-in "ApplicationError".  That way you can control
 how temporal acts in an exception situation.  Se above for an example.
+
+## Instead of Using uuid4
+
+Instead of using uuid4's for throw away strings, for a temp folder or something, it
+is better to use an idempotency key.
+
+* One option for an idempotency key is a combination "workflow run id", and "activity id".
+
+```pycon
+activity_id = activity.info().activity_id
+workflow_run_id = activity.info().workflow_run_id
+
+idempotency_key = f"{workflow_run_id}-{activity_id}"
+```

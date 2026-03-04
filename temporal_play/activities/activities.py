@@ -3,7 +3,6 @@ activities
 """
 
 import os
-import uuid
 import tempfile
 from pathlib import Path
 import temporalio.workflow
@@ -175,12 +174,14 @@ async def run_clone_git_repository_activity(input_data: InputGitRepository) -> s
     :return: The cloned path
     """
     try:
+        activity_id = activity.info().activity_id
+        workflow_run_id = activity.info().workflow_run_id
         secrets_client = HvacClient(
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
         github_secrets = await secrets_client.get_secret("/github")
 
-        clone_path = Path(tempfile.gettempdir()) / str(uuid.uuid4())
+        clone_path = Path(tempfile.gettempdir()) / f"{workflow_run_id}-{activity_id}"
 
         git_client = GitClient(
             username="__token__",
