@@ -90,10 +90,15 @@ class RunNautobotGqlQueryWorkflowWithApproval:
             ),
         )
 
+        workflow.logger.info("awaiting for approval")
+
         await workflow.wait_condition(lambda: self.approved is not None)
 
         if not self.approved:  # pylint: disable=no-else-break
+            workflow.logger.info(f"{self.approver_name} rejected approval")
             return f"{self.approver_name} rejected approval"
+
+        workflow.logger.info(f"{self.approver_name} approved")
 
         return await workflow.execute_activity(
             activity=get_nautobot_gql_data,
@@ -185,6 +190,8 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
             ),
         )
 
+        workflow.logger.info("data retrieved from nautobot")
+
         parse_tasks = []
         for device in self._nbot_data["data"]["devices"]:
             parse_tasks.append(
@@ -206,6 +213,8 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
                     )
                 )
             )
+
+        workflow.logger.info("show commands run on devices, and parsed")
 
         self._parsed_data = await asyncio.gather(*parse_tasks)
 
@@ -237,6 +246,8 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
             "terminal": string_tasks_data,
             "parsed": self._parsed_data,
         }
+
+        workflow.logger.info("completing run-show-command-workflow")
 
         return results
 
@@ -290,6 +301,8 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
             ),
         )
 
+        workflow.logger.info("data retrieved from nautobot")
+
         tasks = []
         for device in self._nbot_data["data"]["devices"]:
             tasks.append(
@@ -308,7 +321,11 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
                 )
             )
 
+        workflow.logger.info("jinja2 rendering complete")
+
         results = await asyncio.gather(*tasks)
+
+        workflow.logger.info("completing run-render-configuration-workflow")
 
         return results
 
@@ -377,6 +394,8 @@ class RunCloneGitRepositoryNexusWorkflow:  # pylint: disable=too-few-public-meth
             input=input_data,
         )
 
+        workflow.logger.info("completing run-clone-git-repository-nexus-workflow")
+
         return result
 
 
@@ -406,6 +425,8 @@ class RunRenderConfigurationNexusWorkflow:  # pylint: disable=too-few-public-met
             operation="render_config",
             input=input_data,
         )
+
+        workflow.logger.info("completing run-render-configuration-nexus-workflow")
 
         return result
 

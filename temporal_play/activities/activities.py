@@ -57,10 +57,13 @@ async def get_nautobot_gql_data(input_data: InputDataNautobotGQLQuery) -> dict:
     :return: nautobot gql data
     """
     try:
+        activity.logger.info(f"retrieving credentials")
         secrets_client = HvacClient(
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
         secrets = await secrets_client.get_secret("/nautobot")
+
+        activity.logger.info(f"retrieving nautobot data")
         obj = NautobotGqlClient(host=secrets["host"], port=secrets["port"], token=secrets["token"], ssl_verify=False)
         data = await obj.get_gql_data(query=input_data.query, variables=input_data.variables)
 
@@ -84,11 +87,13 @@ async def run_show_command_activity(input_data: InputNetmikoCommand) -> str:
     :return: The result of show command
     """
     try:
+        activity.logger.info(f"retrieving credentials")
         secrets_client = HvacClient(
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
         device_secrets = await secrets_client.get_secret("/devices")
 
+        activity.logger.info(f"running commands")
         device = NetmikoClient(
             host=input_data.host,
             username=device_secrets["username"],
@@ -118,11 +123,13 @@ async def run_show_command_parse_with_ntc_templates_activity(input_data: InputNe
     :return: The result of show command
     """
     try:
+        activity.logger.info(f"retrieving credentials")
         secrets_client = HvacClient(
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
         device_secrets = await secrets_client.get_secret("/devices")
 
+        activity.logger.info(f"running commands")
         device = NetmikoClient(
             host=input_data.host,
             username=device_secrets["username"],
@@ -152,6 +159,7 @@ async def run_render_jinja2_activity(input_data: InputRenderJinja2) -> str:
     :return: The rendered template
     """
     try:
+        activity.logger.info(f"rendering configuration")
         data = await render_jinja2_template(template=input_data.template, variable_data=input_data.variable_data)
 
     except Exception as e:
@@ -176,6 +184,7 @@ async def run_clone_git_repository_activity(input_data: InputGitRepository) -> s
     try:
         activity_id = activity.info().activity_id
         workflow_run_id = activity.info().workflow_run_id
+        activity.logger.info(f"retrieving credentials")
         secrets_client = HvacClient(
             host=os.getenv("HVAC_HOST"), port=os.getenv("HVAC_PORT"), token=os.getenv("HVAC_TOKEN")
         )
@@ -183,6 +192,7 @@ async def run_clone_git_repository_activity(input_data: InputGitRepository) -> s
 
         clone_path = Path(tempfile.gettempdir()) / f"{workflow_run_id}-{activity_id}"
 
+        activity.logger.info(f"cloning repository")
         git_client = GitClient(
             username="__token__",
             password=github_secrets["token"],
