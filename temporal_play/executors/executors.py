@@ -299,7 +299,7 @@ async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     :returns: Nothing
     """
     client = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_client()
-    await run_nautobot_gql_query_workflow_with_approval(client=client, task_queue=task_queue)
+    await run_render_configuration_workflow(client=client, task_queue=task_queue)
 
 
 async def main_run_multiple(host: str, port: int, task_queue: str, namespace: str) -> None:
@@ -321,10 +321,10 @@ async def main_run_multiple(host: str, port: int, task_queue: str, namespace: st
 
     tasks = []
     for _ in range(10):
-        tasks.append(run_render_configuration_nexus_workflow(client=client, task_queue=task_queue))
+        tasks.append(run_render_configuration_workflow(client=client, task_queue=task_queue))
 
     await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
-    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-1"))
+    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-1"))
