@@ -59,7 +59,7 @@ class InputDataApprover:
     """Input for an approver"""
 
     name: str
-    approve: bool = False
+    approve: bool
 
 
 @dataclass

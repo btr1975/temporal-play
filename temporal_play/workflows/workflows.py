@@ -62,6 +62,7 @@ class RunNautobotGqlQueryWorkflowWithApproval:
     """This is a workflow to get data from Nautobot with an approval signal"""
 
     def __init__(self) -> None:
+        self._nbot_data = {}
         self.approved = None
         self.approver_name = None
 
@@ -79,7 +80,7 @@ class RunNautobotGqlQueryWorkflowWithApproval:
 
         await workflow.execute_activity(
             activity=say_hello_activity,
-            arg=InputData(name="Ben", other="Poo"),
+            arg=InputData(name="Ben", other="Johnny"),
             schedule_to_close_timeout=timedelta(minutes=10),
             retry_policy=RetryPolicy(
                 backoff_coefficient=2.0,
@@ -89,14 +90,10 @@ class RunNautobotGqlQueryWorkflowWithApproval:
             ),
         )
 
-        while True:
-            await workflow.wait_condition(lambda: self.approved is not None)
+        await workflow.wait_condition(lambda: self.approved is not None)
 
-            if self.approved:  # pylint: disable=no-else-break
-                break
-
-            else:
-                return f"{self.approver_name} put in false"
+        if not self.approved:  # pylint: disable=no-else-break
+            return f"{self.approver_name} rejected approval"
 
         return await workflow.execute_activity(
             activity=get_nautobot_gql_data,
@@ -158,6 +155,10 @@ class RunNautobotGqlQueryWorkflow:  # pylint: disable=too-few-public-methods
 class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
     """This is a workflow to run a show command"""
 
+    def __init__(self) -> None:
+        self._nbot_data = {}
+        self._parsed_data = []
+
     @workflow.run
     async def run(self, input_data: InputShowCommand) -> dict:
         """Method to run the workflow
@@ -170,7 +171,7 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
         """
         workflow.logger.info("starting run-show-command-workflow")
 
-        nbot_data = await workflow.execute_activity(
+        self._nbot_data = await workflow.execute_activity(
             activity=get_nautobot_gql_data,
             arg=InputDataNautobotGQLQuery(
                 query=input_data.nautobot_query.query, variables=input_data.nautobot_query.variables
@@ -185,7 +186,7 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
         )
 
         parse_tasks = []
-        for device in nbot_data["data"]["devices"]:
+        for device in self._nbot_data["data"]["devices"]:
             parse_tasks.append(
                 asyncio.create_task(
                     workflow.execute_activity(
@@ -206,10 +207,10 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
                 )
             )
 
-        parsed_data = await asyncio.gather(*parse_tasks)
+        self._parsed_data = await asyncio.gather(*parse_tasks)
 
         string_tasks = []
-        for device in nbot_data["data"]["devices"]:
+        for device in self._nbot_data["data"]["devices"]:
             string_tasks.append(
                 asyncio.create_task(
                     workflow.execute_activity(
@@ -234,15 +235,34 @@ class RunShowCommandWorkflow:  # pylint: disable=too-few-public-methods
 
         results = {
             "terminal": string_tasks_data,
-            "parsed": parsed_data,
+            "parsed": self._parsed_data,
         }
 
         return results
+
+    @workflow.query(name="nbot_data")
+    def get_nbot_data(self) -> dict:
+        """Temporal query nbot_data
+
+        :returns: The nbot_data
+        """
+        return self._nbot_data
+
+    @workflow.query(name="parsed_data")
+    def get_parsed_data(self) -> list[dict]:
+        """Temporal query parsed_data
+
+        :returns: The parsed_data
+        """
+        return self._parsed_data
 
 
 @workflow.defn(name="run-render-configuration-workflow")
 class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
     """This is a workflow to run a configuration rendering"""
+
+    def __init__(self) -> None:
+        self._nbot_data = {}
 
     @workflow.run
     async def run(self, input_data: InputRenderConfiguration) -> tuple[str]:
@@ -256,7 +276,7 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
         """
         workflow.logger.info("starting run-render-configuration-workflow")
 
-        nbot_data = await workflow.execute_activity(
+        self._nbot_data = await workflow.execute_activity(
             activity=get_nautobot_gql_data,
             arg=InputDataNautobotGQLQuery(
                 query=input_data.nautobot_query.query, variables=input_data.nautobot_query.variables
@@ -271,7 +291,7 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
         )
 
         tasks = []
-        for device in nbot_data["data"]["devices"]:
+        for device in self._nbot_data["data"]["devices"]:
             tasks.append(
                 asyncio.create_task(
                     workflow.execute_activity(
@@ -291,6 +311,14 @@ class RunRenderConfigurationWorkflow:  # pylint: disable=too-few-public-methods
         results = await asyncio.gather(*tasks)
 
         return results
+
+    @workflow.query(name="nbot_data")
+    def get_nbot_data(self) -> dict:
+        """Temporal query nbot_data
+
+        :returns: The nbot_data
+        """
+        return self._nbot_data
 
 
 @workflow.defn(name="run-clone-git-repository-workflow")

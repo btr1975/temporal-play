@@ -276,7 +276,7 @@ async def run_nautobot_gql_query_workflow_with_approval(client: Client, task_que
         task_queue=task_queue,
     )
 
-    await handler.signal(signal="approval", arg=InputDataApprover(name="Ben", approve=True))
+    # await handler.signal(signal="approval", arg=InputDataApprover(name="Ben", approve=True))
 
     result = await handler.result()
 
@@ -299,7 +299,7 @@ async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     :returns: Nothing
     """
     client = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_client()
-    await run_render_configuration_nexus_workflow(client=client, task_queue=task_queue)
+    await run_nautobot_gql_query_workflow_with_approval(client=client, task_queue=task_queue)
 
 
 async def main_run_multiple(host: str, port: int, task_queue: str, namespace: str) -> None:
@@ -327,4 +327,4 @@ async def main_run_multiple(host: str, port: int, task_queue: str, namespace: st
 
 
 if __name__ == "__main__":
-    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-2"))
+    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-1"))
