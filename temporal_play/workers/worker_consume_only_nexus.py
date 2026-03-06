@@ -4,11 +4,7 @@ Worker that consumes ONLY nexus workflows
 
 import asyncio
 
-
-from temporalio.client import Client
-
-
-from temporal_play.workers.worker_creator import get_worker
+from temporal_play.client_factory import BasicClientFactory
 from temporal_play.activities.activities import ALL_ACTIVITIES
 from temporal_play.workflows.workflows import ALL_NEXUS_WORKFLOWS
 
@@ -28,8 +24,10 @@ async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     :rtype: None
     :returns: Nothing
     """
-    client = await Client.connect(target_host=f"{host}:{port}", namespace=namespace)
-    worker = get_worker(client=client, task_queue=task_queue, workflows=ALL_NEXUS_WORKFLOWS, activities=ALL_ACTIVITIES)
+    worker = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_worker(
+        task_queue=task_queue, workflows=ALL_NEXUS_WORKFLOWS, activities=ALL_ACTIVITIES
+    )
+
     await worker.run()
     print("Worker Started")
 

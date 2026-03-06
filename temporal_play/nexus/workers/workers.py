@@ -4,11 +4,7 @@ Nexus workers
 
 import asyncio
 
-
-from temporalio.client import Client
-
-
-from temporal_play.nexus.workers.nexus_worker_creator import get_nexus_worker
+from temporal_play.client_factory import BasicClientFactory
 from temporal_play.nexus.handlers.handlers import MyNexusServicesHandler
 from temporal_play.workflows.workflows import ALL_WORKFLOWS_FOR_NEXUS_WORKERS
 
@@ -23,13 +19,10 @@ async def main(host: str, port: int | str, task_queue: str, namespace: str) -> N
 
     :returns: Nothing
     """
-    client = await Client.connect(target_host=f"{host}:{port}", namespace=namespace)
-    worker = get_nexus_worker(
-        client=client,
-        task_queue=task_queue,
-        workflows=ALL_WORKFLOWS_FOR_NEXUS_WORKERS,
-        nexus_service_handlers=[MyNexusServicesHandler()],
+    worker = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_worker(
+        task_queue=task_queue, workflows=ALL_WORKFLOWS_FOR_NEXUS_WORKERS, activities=[MyNexusServicesHandler()]
     )
+
     await worker.run()
     print("Nexus Worker Started")
 
