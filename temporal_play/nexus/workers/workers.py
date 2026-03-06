@@ -19,8 +19,10 @@ async def main(host: str, port: int | str, task_queue: str, namespace: str) -> N
 
     :returns: Nothing
     """
-    worker = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_worker(
-        task_queue=task_queue, workflows=ALL_WORKFLOWS_FOR_NEXUS_WORKERS, activities=[MyNexusServicesHandler()]
+    worker = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_nexus_worker(
+        task_queue=task_queue,
+        workflows=ALL_WORKFLOWS_FOR_NEXUS_WORKERS,
+        nexus_service_handlers=[MyNexusServicesHandler()],
     )
 
     await worker.run()

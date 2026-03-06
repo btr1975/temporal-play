@@ -7,6 +7,7 @@ import uuid
 
 from temporalio.client import Client
 
+from temporal_play.client_factory import BasicClientFactory
 from temporal_play.schemas.schemas import (
     InputData,
     InputDataNautobotGQLQuery,
@@ -297,7 +298,7 @@ async def main(host: str, port: int, task_queue: str, namespace: str) -> None:
     :rtype: None
     :returns: Nothing
     """
-    client = await Client.connect(f"{host}:{port}", namespace=namespace)
+    client = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_client()
     await run_render_configuration_nexus_workflow(client=client, task_queue=task_queue)
 
 
@@ -316,14 +317,14 @@ async def main_run_multiple(host: str, port: int, task_queue: str, namespace: st
     :rtype: None
     :returns: Nothing
     """
-    client = await Client.connect(f"{host}:{port}", namespace=namespace)
+    client = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_client()
 
     tasks = []
     for _ in range(10):
-        tasks.append(run_render_configuration_workflow(client=client, task_queue=task_queue))
+        tasks.append(run_render_configuration_nexus_workflow(client=client, task_queue=task_queue))
 
     await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
-    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-2"))
+    asyncio.run(main_run_multiple(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-2"))
