@@ -326,5 +326,65 @@ async def main_run_multiple(host: str, port: int, task_queue: str, namespace: st
     await asyncio.gather(*tasks)
 
 
+async def main_run_multiple_different(host: str, port: int, task_queue: str, namespace: str) -> None:
+    """Main function
+
+    :param host: The temporal host
+    :type host: str
+    :param port: The temporal port
+    :type port: int
+    :param task_queue: The name of the task queue
+    :type task_queue: str
+    :param namespace: The namespace
+    :type namespace: str
+
+    :rtype: None
+    :returns: Nothing
+    """
+    client = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_client()
+
+    tasks = [
+        run_render_configuration_workflow(client=client, task_queue=task_queue),
+        run_show_command_workflow(client=client, task_queue=task_queue),
+        run_say_hello_workflow(client=client, task_queue=task_queue),
+        run_clone_git_repository_workflow(client=client, task_queue=task_queue),
+        run_nautobot_gql_query_workflow_with_approval(client=client, task_queue=task_queue),
+        run_nautobot_gql_query_workflow(client=client, task_queue=task_queue),
+    ]
+
+    await asyncio.gather(*tasks)
+
+
+async def main_run_multiple_different_nexus(host: str, port: int, task_queue: str, namespace: str) -> None:
+    """Main function
+
+    :param host: The temporal host
+    :type host: str
+    :param port: The temporal port
+    :type port: int
+    :param task_queue: The name of the task queue
+    :type task_queue: str
+    :param namespace: The namespace
+    :type namespace: str
+
+    :rtype: None
+    :returns: Nothing
+    """
+    client = await BasicClientFactory.create(host=host, port=port, namespace=namespace).get_client()
+
+    tasks = [
+        run_render_configuration_nexus_workflow(client=client, task_queue=task_queue),
+        run_clone_git_repository_nexus_workflow(client=client, task_queue=task_queue),
+        run_render_configuration_nexus_workflow(client=client, task_queue=task_queue),
+        run_clone_git_repository_nexus_workflow(client=client, task_queue=task_queue),
+        run_render_configuration_nexus_workflow(client=client, task_queue=task_queue),
+        run_clone_git_repository_nexus_workflow(client=client, task_queue=task_queue),
+    ]
+
+    await asyncio.gather(*tasks)
+
+
 if __name__ == "__main__":
-    asyncio.run(main(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-1"))
+    asyncio.run(
+        main_run_multiple_different(host="10.0.0.113", port=8081, task_queue="my-task-queue", namespace="namespace-1")
+    )
